@@ -1,0 +1,29 @@
+{
+  "name": "econofi-agents-v2-specs",
+  "version": "2.0.0",
+  "description": "Technical implementation specifications for Econofi Agents compliance automation platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Specifications only - no implementation yet\" && exit 0"
+  },
+  "keywords": [
+    "compliance",
+    "banking",
+    "BSA-AML",
+    "CRA",
+    "fair-lending",
+    "Claude-AI",
+    "specifications",
+    "TDD"
+  ],
+  "author": "Bill Allen / Agile Innovation LLC",
+  "license": "PROPRIETARY",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
