@@ -88,6 +88,61 @@ A $200M MDI currently on Verafin is paying $40,000–$50,000/year. Econofi at $2
 
 ---
 
+## Pricing Headroom and Growth Roadmap
+
+Current pricing is below Patriot Officer — the oldest, most dated product in the space. There is meaningful headroom, unlocked in phases as vendor risk is retired.
+
+### What Drives Legacy Vendor Premiums
+
+Name recognition buys three things that have nothing to do with product quality:
+
+1. **Examiner familiarity.** BSA examiners have seen Verafin alert reports hundreds of times. Unknown vendor output creates friction — the BSA Officer has to explain and defend the tool, not just the findings.
+2. **Vendor stability signal.** Bank procurement asks: "Will this vendor exist in three years?" SOC 2 Type II and reference customers are the answers.
+3. **Contractual precedent.** Known vendors move through IT/legal approval in 30 days. Unknown vendors take 90–120 days and require a full security review.
+
+None of these are product advantages. All three erode over time.
+
+### Phase 1 — Pre-SOC 2 (current)
+
+A 25–30% discount to Verafin is appropriate and honest. It compensates for vendor risk without signaling low product quality.
+
+| Asset Size | Verafin midpoint | Current price | Ceiling (–27%) | Immediate raise |
+|---|---|---|---|---|
+| $200M | $48,500 | $25,000 | $35,000 | **+$10,000** |
+| $300M | $62,500 | $37,500 | $45,000 | **+$7,500** |
+| $400M | $76,500 | $50,000 | $55,000 | **+$5,000** |
+| $500M | $86,500 | $62,500 | $65,000 | **+$2,500** |
+
+### Phase 2 — Post-SOC 2 (6–12 months, 3–10 live banks)
+
+SOC 2 Type II eliminates the procurement risk discount. Reference customers eliminate examiner familiarity concerns. Price at Verafin parity minus a modest growth discount.
+
+| Asset Size | Post-SOC 2 target | vs. current |
+|---|---|---|
+| $200M | $42,000 | +68% |
+| $300M | $55,000 | +47% |
+| $400M | $67,500 | +35% |
+| $500M | $77,500 | +24% |
+
+### Phase 3 — MDI Specialist Premium (10+ banks, examiner familiarity established)
+
+Verafin is a commercial bank product bolted onto MDIs. Econofi is built for MDIs. Once examiners have seen the output format at multiple banks and MDI trade associations know the product, a specialist premium over Verafin is defensible.
+
+| Asset Size | Long-term target | vs. Verafin midpoint |
+|---|---|---|
+| $200M | $52,500 | +8% |
+| $300M | $67,500 | +8% |
+| $400M | $82,500 | +8% |
+| $500M | $92,500 | +7% |
+
+### The Renewal Advantage
+
+The name recognition gap is real in year one of a bank's decision. It is nearly irrelevant at renewal. A BSA Officer who has used the product for 12 months, passed an exam with the alert reports, and filed SARs using the narrative drafts will not leave for Verafin. Switching cost at renewal is high and entirely in Econofi's favor.
+
+**Price the pilot to close, not to optimize margin.** The first exam cycle at each bank is worth more than any discount given to get in the door.
+
+---
+
 ## Unit Economics
 
 ### Direct Cost to Serve (per bank, per year)
