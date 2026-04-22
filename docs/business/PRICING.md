@@ -79,12 +79,12 @@ State this clearly in the contract. Asset ratchets are standard and expected. Su
 
 | Vendor | Community Bank Pricing | Notes |
 |---|---|---|
-| Verafin (Nasdaq) | $40,000–$80,000/yr | Most common BSA/AML tool at MDI-sized banks |
-| Alessa | $30,000–$60,000/yr | Lighter product, less AI |
-| Patriot Officer | $25,000–$50,000/yr | Legacy, on-prem option |
+| Verafin (Nasdaq) | $40,000–$80,000/yr (estimated) | Most common BSA/AML tool at MDI-sized banks. Has genuine ML and, since 2024, generative AI tooling. Pricing not publicly disclosed — figures are industry estimates. |
+| Alessa | $30,000–$60,000/yr | Mid-market, more limited AI capability than Verafin |
+| Patriot Officer | $25,000–$50,000/yr | Oldest product in the space, on-prem, genuinely rule-based |
 | **Econofi** | **$25,000–$62,500/yr** | AI-native, cloud-only, MDI-focused |
 
-A $200M MDI currently on Verafin is paying $40,000–$50,000/year. Econofi at $25,000 is a 40–50% reduction with a more capable product. Lead with value delivered, not cost comparison — but the cost comparison closes deals.
+A $200M MDI currently on Verafin is paying an estimated $40,000–$55,000/year for a product built for commercial banks with no MDI-specific design. Lead with value delivered and MDI fit — not a technology dismissal of Verafin, which has genuine AI capability and will defend it.
 
 ---
 

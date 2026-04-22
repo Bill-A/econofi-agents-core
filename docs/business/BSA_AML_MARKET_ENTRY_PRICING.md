@@ -1,8 +1,8 @@
 # BSA/AML Market Entry Pricing Strategy
 
-**Prepared for**: Art and Steve
-**Date**: April 2026
-**Prepared by**: Econofi
+**Prepared for**: Mentor DIscussions
+**Date**: April 22, 2026
+**Prepared by**: M. Mtetwa for Econofi
 
 ---
 
@@ -28,11 +28,13 @@ BSA/AML compliance software is a mature, sticky market with well-known vendors. 
 
 | Vendor | Annual Pricing (community banks) | Product Reality |
 |---|---|---|
-| Verafin (acquired by Nasdaq, 2021) | $40,000–$80,000/yr | Market leader at MDI-sized banks. Rule-based detection, legacy architecture. Strong examiner familiarity — BSA regulators know this product by name. |
-| Alessa | $30,000–$60,000/yr | Mid-market. Limited AI capability. Less common at MDIs. |
-| Patriot Officer | $25,000–$50,000/yr | Oldest product in the space. On-premises option. Largely unchanged for a decade. |
+| Verafin (acquired by Nasdaq, 2021) | $40,000–$80,000/yr (estimated — pricing not public) | Market leader at MDI-sized banks. Genuine ML capability and, since 2024, generative AI tooling. Large consortium data network across 2,700 institutions. Built for commercial banks, adapted down-market. Strong examiner familiarity — BSA regulators know this product by name. |
+| Alessa | $30,000–$60,000/yr | Mid-market. More limited AI capability than Verafin. Less common at MDIs. |
+| Patriot Officer | $25,000–$50,000/yr | Oldest product in the space. On-premises option. Largely unchanged for a decade. Genuinely rule-based. |
 
-**The market is real and paying.** A $200M MDI is currently writing Verafin a check for $40,000–$55,000 every year for a product built on 2010-era rule engines with no AI capability and no MDI-specific design. That bank has no better option — until now.
+**The market is real and paying.** A $200M MDI is currently paying an estimated $40,000–$55,000 per year for BSA/AML compliance software — software built for commercial banks, not MDIs, with MDI-specific transaction patterns, customer demographics, and community lending context treated as an afterthought. That bank has no MDI-native option — until now.
+
+*Note: Verafin pricing is not publicly disclosed. The figures above are industry estimates. Treat as directional, not quoted.*
 
 ---
 
@@ -189,4 +191,4 @@ Churn in compliance software is structurally low. Price to acquire, hold at rene
 
 4. **Raise prices to Phase 1 ceiling immediately** for banks four and five. We are leaving money on the table today without any competitive reason to do so.
 
-The market is paying $40,000–$80,000 per year for aging software with no AI capability and no MDI focus. We have a better product at a lower price with better unit economics. The path to market pricing is SOC 2 and reference customers — both of which are within reach this year.
+The market is paying an estimated $40,000–$80,000 per year for software built for commercial banks, with no MDI-specific design and no understanding of the communities these institutions serve. We have a product built for this customer from the ground up. The path to market pricing is SOC 2 and reference customers — both of which are within reach this year.
