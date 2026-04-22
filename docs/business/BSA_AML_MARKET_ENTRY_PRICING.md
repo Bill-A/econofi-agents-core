@@ -6,151 +6,187 @@
 
 ---
 
-## The Short Version
+## What We Are Building
 
-We are priced below the oldest, least capable product in the market. There is significant headroom — roughly 40–68% before we reach parity with the market leader. The path to full-price positioning runs through SOC 2 Type II certification and three to five live reference banks. Both are achievable within 12 months.
+Econofi's first product is TransactionMonitor — an AI-native BSA/AML compliance agent for Minority Depository Institutions (MDIs) and Community Development Financial Institutions (CDFIs).
+
+Every bank in the United States is legally required to screen transactions for suspicious activity and file Suspicious Activity Reports (SARs) with FinCEN. For a community bank, this falls on a single BSA Officer who manually reviews hundreds of alerts, researches patterns, writes SAR narratives, and maintains an audit trail — all under the threat of significant regulatory sanctions if they miss something. This is an $80,000–$120,000/year person doing work that AI handles better and faster.
+
+Our product:
+- Screens every transaction every night for structuring, velocity anomalies, geographic risk, and round-dollar patterns
+- Delivers a prioritized alert queue to the BSA Officer each morning with SAR narrative drafts included
+- Maintains the immutable audit trail that regulators require
+- Requires no changes to the bank's existing core banking system — the bank drops a file; everything else is automated
+
+The target customer is an MDI or CDFI community bank with $200M–$500M in assets. There are approximately 150–200 institutions in this range. This is an underserved market — the major BSA/AML vendors treat these banks as small commercial accounts, not as a segment worth building for.
 
 ---
 
-## Where We Are Priced Today
+## The Market We Are Entering
 
-Our current annual subscription:
+BSA/AML compliance software is a mature, sticky market with well-known vendors. The relevant competitive set at the community bank tier:
 
-| MDI Asset Size | Econofi |
+| Vendor | Annual Pricing (community banks) | Product Reality |
+|---|---|---|
+| Verafin (acquired by Nasdaq, 2021) | $40,000–$80,000/yr | Market leader at MDI-sized banks. Rule-based detection, legacy architecture. Strong examiner familiarity — BSA regulators know this product by name. |
+| Alessa | $30,000–$60,000/yr | Mid-market. Limited AI capability. Less common at MDIs. |
+| Patriot Officer | $25,000–$50,000/yr | Oldest product in the space. On-premises option. Largely unchanged for a decade. |
+
+**The market is real and paying.** A $200M MDI is currently writing Verafin a check for $40,000–$55,000 every year for a product built on 2010-era rule engines with no AI capability and no MDI-specific design. That bank has no better option — until now.
+
+---
+
+## Our Pricing
+
+Annual subscription, determined by total bank assets per the most recent FDIC call report:
+
+| MDI Asset Size | Annual Subscription |
 |---|---|
 | Under $200M | $25,000 |
 | ~$300M | $37,500 |
 | ~$400M | $50,000 |
 | ~$500M | $62,500 |
 
-For context, the competitive landscape:
+One-time implementation fee (covers SFTP provisioning, core export configuration, BSA Officer onboarding):
 
-| Vendor | Community Bank Pricing | Product |
-|---|---|---|
-| Verafin (Nasdaq) | $40,000–$80,000/yr | Market leader — rule-based, legacy architecture, strong examiner familiarity |
-| Alessa | $30,000–$60,000/yr | Mid-tier, limited AI capability |
-| Patriot Officer | $25,000–$50,000/yr | Oldest product in the space, on-prem, largely unchanged for a decade |
-| **Econofi** | **$25,000–$62,500/yr** | AI-native, cloud-only, MDI-focused |
+| Asset Size | Implementation Fee |
+|---|---|
+| Under $200M | $10,000 |
+| $300M–$400M | $10,000–$12,500 |
+| $500M | $15,000 |
 
-We are priced at or below Patriot Officer. That is not a sustainable position for a product that is demonstrably more capable.
+**Pilot terms**: Implementation fee waived for the first three MDI banks. Named explicitly as pilot pricing at signing.
+
+Standard contract terms: 3% annual escalator, 10% discount for 3-year commitment, asset growth ratchet at renewal.
 
 ---
 
-## Why Legacy Vendors Command a Premium
+## Where We Stand vs. the Market
 
-It is not the product. Verafin's detection logic is rule-based and has not fundamentally changed in years. The premium comes from three things:
+| Asset Size | Patriot Officer (low end) | Verafin (midpoint) | **Econofi** |
+|---|---|---|---|
+| $200M | $25,000 | $48,500 | **$25,000** |
+| $300M | $32,000 | $62,500 | **$37,500** |
+| $400M | $40,000 | $76,500 | **$50,000** |
+| $500M | $48,000 | $86,500 | **$62,500** |
 
-**1. Examiner familiarity.** BSA examiners at the OCC, FDIC, and Federal Reserve have reviewed Verafin alert reports hundreds of times. They recognize the format and trust the output without asking questions. An unfamiliar vendor's reports create friction — the BSA Officer has to explain and defend the tool during an exam, on top of defending the findings.
+We are currently priced at Patriot Officer — the oldest, least capable product in the space. This is intentional for the pilot phase but is not our long-term position. There is 40–68% of headroom between our current price and Verafin at the $200M tier.
 
-**2. Vendor stability.** Bank procurement and boards ask one question about any new compliance vendor: "Will they be here in three years?" Nasdaq-backed Verafin has a clear answer. A new entrant without SOC 2 certification or a reference base does not — yet.
+---
 
-**3. Procurement momentum.** IT and legal teams at community banks reuse approved vendor templates. A known vendor gets approved in 30 days. A new vendor requires a full security review and takes 90–120 days. This is not a product problem — it is a process problem that SOC 2 solves.
+## Why We Are Not Priced at Market Today
 
-None of these are product advantages. All three are solvable.
+Legacy vendors command a premium for three things that have nothing to do with product quality:
+
+**1. Examiner familiarity.** BSA examiners at the OCC and FDIC have seen Verafin alert reports hundreds of times. They recognize the format, trust the methodology, and move on. An unfamiliar vendor's output requires the BSA Officer to explain and defend the tool during an exam — on top of defending the actual findings. This is a real cost to the bank and a real barrier for us.
+
+**2. Vendor stability.** Bank boards and procurement committees ask one question about any new compliance vendor: "Will they be here in three years?" Nasdaq-backed Verafin has a clear answer. We do not — yet. SOC 2 Type II certification is the industry's answer to this question, and we are pursuing it. Until it is complete, a pricing discount is honest and appropriate.
+
+**3. Procurement precedent.** IT and legal teams at community banks reuse approved vendor templates. A known vendor gets approved in 30 days. A new vendor requires a full security review — 90 to 120 days and meaningful internal IT bandwidth. SOC 2 largely resolves this.
+
+None of these are product disadvantages. All three are solvable within 12 months.
 
 ---
 
 ## The Three-Phase Pricing Roadmap
 
-### Phase 1 — Pilot Period (Now, Pre-SOC 2)
+### Phase 1 — Pilot (Now, Pre-SOC 2)
 
-**Objective**: Close the first three to five MDI pilot banks. Establish reference relationships. Survive the first exam cycle at each bank.
+Close the first three to five MDI pilot banks. Price at 25–30% below Verafin — an honest discount for vendor risk that does not undervalue the product.
 
-**Appropriate discount**: 25–30% below Verafin. This is honest — we are carrying real vendor risk for the bank and the discount compensates for it.
+| Asset Size | Recommended ceiling | Current price | Headroom |
+|---|---|---|---|
+| $200M | $35,000 | $25,000 | +$10,000 |
+| $300M | $45,000 | $37,500 | +$7,500 |
+| $400M | $55,000 | $50,000 | +$5,000 |
+| $500M | $65,000 | $62,500 | +$2,500 |
 
-| Asset Size | Verafin midpoint | Recommended ceiling | Current price | Headroom available now |
-|---|---|---|---|---|
-| $200M | $48,500 | $35,000 | $25,000 | +$10,000 |
-| $300M | $62,500 | $45,000 | $37,500 | +$7,500 |
-| $400M | $76,500 | $55,000 | $50,000 | +$5,000 |
-| $500M | $86,500 | $65,000 | $62,500 | +$2,500 |
-
-We can raise prices immediately without losing the pilot opportunity. We are currently leaving $2,500–$10,000 per bank on the table relative to what procurement will accept today.
-
-**Pilot terms**: Implementation fee waived for the first three banks. Named as "pilot pricing" explicitly. The waiver is a closing tool, not a concession — frame it that way.
-
----
+We are currently leaving $2,500–$10,000 per bank on the table. The pilot banks will close at current pricing. Future pilots should be at the ceiling.
 
 ### Phase 2 — Market Parity (Post-SOC 2, 3–10 Live Banks)
 
-**Objective**: Retire the vendor risk discount. Price at Verafin parity with a modest growth discount maintained for competitive positioning.
+SOC 2 Type II certification eliminates the procurement risk discount. Three or more banks with a completed exam cycle eliminate the examiner familiarity gap. At this stage, we price at Verafin parity with a modest discount maintained as a competitive growth posture.
 
-**Trigger**: SOC 2 Type II certification complete. Three or more banks have passed at least one regulatory exam cycle using Econofi.
-
-| Asset Size | Phase 2 target | vs. Phase 1 ceiling | vs. current |
-|---|---|---|---|
-| $200M | $42,000 | +20% | +68% |
-| $300M | $55,000 | +22% | +47% |
-| $400M | $67,500 | +23% | +35% |
-| $500M | $77,500 | +19% | +24% |
-
-SOC 2 is not a feature milestone. It is the pricing milestone. The product does not change — the procurement risk does.
-
----
-
-### Phase 3 — MDI Specialist Premium (10+ Banks, Established Market Position)
-
-**Objective**: Command a premium over Verafin on the basis of MDI specialization.
-
-Verafin is a commercial bank product adapted for smaller institutions. It was not designed for the specific transaction patterns, customer demographics, or regulatory relationships of Minority Depository Institutions. Econofi was.
-
-Once BSA examiners have seen Econofi output at multiple banks, and once MDI trade associations (NCIF, NBA, NAOBA) know the product by name, the examiner familiarity advantage inverts. We become the known quantity.
-
-| Asset Size | Phase 3 target | vs. Verafin midpoint |
+| Asset Size | Phase 2 target | vs. current |
 |---|---|---|
-| $200M | $52,500 | +8% premium |
-| $300M | $67,500 | +8% premium |
-| $400M | $82,500 | +8% premium |
-| $500M | $92,500 | +7% premium |
+| $200M | $42,000 | +68% |
+| $300M | $55,000 | +47% |
+| $400M | $67,500 | +35% |
+| $500M | $77,500 | +24% |
+
+SOC 2 is the single highest-leverage business investment on the current roadmap. It is not a compliance checkbox — it is a pricing unlock.
+
+### Phase 3 — MDI Specialist Premium (10+ Banks)
+
+Once BSA examiners have seen Econofi output at multiple banks and MDI trade associations know the product by name, the examiner familiarity advantage inverts. Verafin is a commercial bank product adapted for smaller institutions. Econofi is built for MDIs. A specialist premium over Verafin becomes defensible.
+
+| Asset Size | Phase 3 target | vs. Verafin |
+|---|---|---|
+| $200M | $52,500 | +8% |
+| $300M | $67,500 | +8% |
+| $400M | $82,500 | +8% |
+| $500M | $92,500 | +7% |
 
 ---
 
-## Unit Economics — Why This Works
+## The Economics
 
-Direct cost to serve one bank for one year:
+Direct cost to deliver BSA/AML for one bank for one year:
 
 | Component | Annual cost |
 |---|---|
-| AI (Claude API) | ~$1 |
-| Infrastructure | ~$50–75 |
-| **Total direct COGS** | **~$75** |
+| AI (Claude API — per-batch analysis) | ~$1 |
+| Infrastructure (database, compute, file transfer, storage) | ~$50–75 |
+| **Total direct cost** | **~$75** |
 
-The AI cost is not a typo. Our architecture sends only a pattern summary to the model — not the full transaction set. A nightly batch of 50,000 transactions costs less than a penny in API fees. This is a structural advantage over any rule-based system with server-side compute costs.
+The AI cost is not a rounding error — it is structural. Our architecture sends only a pattern summary to the model, not raw transaction data. A nightly batch of 50,000 transactions costs less than one cent in API fees. This advantage compounds: every bank we add is near-zero marginal cost.
 
-**Gross margin at Phase 1 pricing:**
+**Gross margin at pilot pricing:**
 
-| Asset Size | ACV | COGS | Gross Margin |
+| Asset Size | ACV | Direct Cost | Gross Margin |
 |---|---|---|---|
-| $200M | $35,000 | $75 | 99.8% |
-| $300M | $45,000 | $75 | 99.8% |
-| $400M | $55,000 | $75 | 99.9% |
-| $500M | $65,000 | $75 | 99.9% |
+| $200M | $25,000 | $75 | 99.7% |
+| $300M | $37,500 | $75 | 99.8% |
+| $400M | $50,000 | $75 | 99.9% |
+| $500M | $62,500 | $75 | 99.9% |
 
-**At 10 banks, the fully-loaded model (including engineering, SOC 2 overhead, and customer success) reaches breakeven at the $200M tier and is profitable across all tiers above it. From bank 11 onward, each new bank adds near-zero marginal cost.**
+Fully-loaded (including engineering, SOC 2 overhead, and customer success allocated across banks), the model reaches breakeven at approximately 10 banks at the $200M tier. Every bank above that adds near-zero marginal cost.
+
+---
+
+## The Value Case for the Bank
+
+A BSA Officer at a community bank earns $80,000–$120,000/year. Econofi reduces their investigation time by 60–70% through automated alert triage, pre-drafted SAR narratives, and a prioritized queue that replaces hours of manual transaction review.
+
+| Bank Size | BSA Officer Cost | Time Saved (est. 65%) | Value to Bank | Econofi Price | Bank ROI |
+|---|---|---|---|---|---|
+| $200M | $100,000 | $65,000 | $65,000 | $25,000 | **2.6x** |
+| $300M | $110,000 | $71,500 | $71,500 | $37,500 | **1.9x** |
+| $400M | $115,000 | $74,750 | $74,750 | $50,000 | **1.5x** |
+| $500M | $120,000 | $78,000 | $78,000 | $62,500 | **1.2x** |
+
+The 2.6x ROI at the $200M tier is a strong opening argument. At the $500M tier, the conversation shifts from labor savings to risk reduction — a single FinCEN enforcement action carries $1M–$5M in fines plus remediation costs and reputational damage that threatens the institution's MDI designation.
 
 ---
 
 ## The Renewal Moat
 
-The name recognition gap matters in year one. It is nearly irrelevant at renewal.
+The name recognition gap is real when a bank is making its first decision. It is nearly irrelevant at renewal.
 
-A BSA Officer who has used Econofi for 12 months — who has passed an exam with our alert reports and filed SARs using our narrative drafts — will not move to Verafin. The switching cost at renewal runs in our favor:
+A BSA Officer who has used Econofi for 12 months — who has passed a regulatory exam with our alert reports and filed SARs using our narrative drafts — will not move to Verafin. The switching cost runs entirely in our favor: retraining staff, re-mapping the core export, losing 12 months of alert history and behavioral baselines, and explaining the vendor change to the next examiner.
 
-- Retraining the BSA Officer on a new system
-- Re-mapping the core export to a new format
-- Losing 12 months of alert history and baseline context
-- Explaining the vendor change to the next examiner
-
-**Churn in compliance software is low industry-wide.** We can price aggressively to acquire and hold price at renewal. The pilot pricing decision matters far less than getting through the first exam cycle.
+Churn in compliance software is structurally low. Price to acquire, hold at renewal.
 
 ---
 
-## What We Are Asking For
+## What We Need to Execute This
 
-The pilot banks should be closed at Phase 1 ceiling pricing — $35,000–$65,000 by tier — not at current pricing. We are leaving money on the table today that does not improve our competitive position.
+1. **Close pilot banks at current pricing.** The first three banks establish the reference base. The implementation fee waiver is the closing tool.
 
-SOC 2 Type II should be treated as the single highest-leverage business investment on the roadmap. It is the unlock for Phase 2 pricing across every bank we sign.
+2. **Complete SOC 2 Type II.** This is the pricing unlock, not a product milestone. Target: within 12 months.
 
-The MDI specialist position — Phase 3 — is a 2–3 year story, but the groundwork is laid now by how we build the product, how we talk about it, and which trade relationships we invest in.
+3. **Survive the first exam cycle at each pilot bank.** One BSA Officer telling an examiner "we use Econofi" and having the examiner accept the output is worth more than any marketing investment.
 
-The market is $40,000–$80,000 per bank per year for an aging product with no AI capability and no MDI focus. We have a better product. The pricing should reflect that within 12 months.
+4. **Raise prices to Phase 1 ceiling immediately** for banks four and five. We are leaving money on the table today without any competitive reason to do so.
+
+The market is paying $40,000–$80,000 per year for aging software with no AI capability and no MDI focus. We have a better product at a lower price with better unit economics. The path to market pricing is SOC 2 and reference customers — both of which are within reach this year.
