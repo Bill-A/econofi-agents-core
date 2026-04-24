@@ -77,14 +77,30 @@ State this clearly in the contract. Asset ratchets are standard and expected. Su
 
 ## Competitive Position
 
-| Vendor | Community Bank Pricing | Notes |
-|---|---|---|
-| Verafin (Nasdaq) | $40,000–$80,000/yr (estimated) | Most common BSA/AML tool at MDI-sized banks. Has genuine ML and, since 2024, generative AI tooling. Pricing not publicly disclosed — figures are industry estimates. |
-| Alessa | $30,000–$60,000/yr | Mid-market, more limited AI capability than Verafin |
-| Patriot Officer | $25,000–$50,000/yr | Oldest product in the space, on-prem, genuinely rule-based |
-| **Econofi** | **$25,000–$62,500/yr** | AI-native, cloud-only, MDI-focused |
+The actual incumbent at a $200M–$500M MDI is most likely their core banking vendor's bundled BSA/AML module — not Verafin. Know what you are displacing before the sales conversation.
 
-A $200M MDI currently on Verafin is paying an estimated $40,000–$55,000/year for a product built for commercial banks with no MDI-specific design. Lead with value delivered and MDI fit — not a technology dismissal of Verafin, which has genuine AI capability and will defend it.
+### Core Banking Module Incumbents (most common at MDI asset tier)
+
+| Core Vendor | BSA/AML Product | Notes |
+|---|---|---|
+| Fiserv (Premier, Precision) | AML Risk Manager (FCRM) | Bundled with core; no separate license fee |
+| Jack Henry (SilverLake, CIF 20/20) | Yellow Hammer BSA → Financial Crimes Defender | FCD launched Oct 2023; AI/ML-based; Carver Federal (MDI) is early adopter |
+| FIS (Horizon, IBS) | Prime Compliance Suite | Bundles BSA, OFAC, EDD, legal reporting |
+
+Displacing a core module requires justifying a new line-item cost against a product the bank currently perceives as free. Focus on what the core module fails to detect and what an exam finding costs.
+
+### Third-Party Point Solutions
+
+| Vendor | Est. Pricing ($200M–$500M bank) | Notes |
+|---|---|---|
+| Abrigo BAM+ | $20,000–$50,000/yr | Dominant third-party at community banks; 2,400+ institutions; ABA Preferred; has ML and generative AI AML Assistant |
+| Verafin (Nasdaq) | $40,000–$80,000/yr | More common at $500M+ post-Nasdaq acquisition; genuine ML and agentic AI since 2024; consortium data network across 2,700 institutions |
+| Patriot Officer | $25,000–$50,000/yr | Oldest product in the space; genuinely rule-based; on-prem option |
+| **Econofi** | **$25,000–$62,500/yr** | MDI-native; AI-native; cloud-only |
+
+*All vendor pricing figures are industry estimates. No vendor in this market publishes rates publicly.*
+
+The primary pricing comparison is Abrigo BAM+, not Verafin. Econofi is priced above Abrigo at the $200M–$300M tier, at Abrigo mid-range at $400M, and below Verafin at all tiers. Do not dismiss Abrigo's or Verafin's AI capability — both have genuine ML. Differentiate on MDI specialization, not on AI novelty.
 
 ---
 
