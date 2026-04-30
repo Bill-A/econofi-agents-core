@@ -336,23 +336,25 @@ the NarrativeWriter output, generates a warm lead list of BSA Officers.
 **URL**: `sar.econofi.app` (Cloudflare CNAME → Netlify, orange cloud)
 **Code**: `econofi-sar-library/` — see `DEPLOY.md` for deployment steps
 
-| Status | Task | Detail |
-|---|---|---|
-| [x] | Astro project scaffold | Base layout, HubSpot tracking code, mobile-responsive |
-| [x] | Library index page | Category navigation, available/coming-soon per template |
-| [x] | Template: Smurfing (STR-002) | Structuring — 31 USC §5324, MDI Context callout |
-| [x] | Template: Dormant account (VEL-001) | Velocity anomaly, MDI Context callout |
-| [x] | Template: FATF blacklist (GEO-001) | Geographic risk, FATF source citation |
-| [x] | Template: Wire concentration (RDW-001) | Round-dollar pattern |
-| [x] | Copy-to-clipboard | Zero-friction action on every template |
-| [x] | Legal disclaimer | On every template page — not legal advice |
-| [x] | HubSpot form embed (code) | Embed code in TemplateLayout.astro — commented, ready to activate |
-| [ ] | Push to GitHub | Create repo, push `main` branch |
-| [ ] | Netlify deploy | GitHub → Netlify CI/CD, auto-deploy on push |
-| [ ] | Cloudflare DNS | CNAME `sar` → Netlify, orange cloud, SSL auto-provisioned |
-| [ ] | HubSpot Hub ID — add to BaseLayout | Replace `YOUR_HUB_ID` with numeric Hub ID |
-| [ ] | HubSpot form — Word download | Create form in HubSpot, activate embed in TemplateLayout |
-| [ ] | HubSpot tracking verified | Page visits appear in HubSpot contact timeline |
+**Code complete (Claude Code session):**
+- [x] Astro project scaffold — base layout, HubSpot tracking placeholder, mobile-responsive
+- [x] Library index page — 4 category cards, available/coming-soon per template
+- [x] Template STR-002: Smurfing — 31 USC §5324, MDI Context callout
+- [x] Template VEL-001: Dormant Account — velocity anomaly, MDI Context callout
+- [x] Template GEO-001: FATF Blacklist — geographic risk, FATF source citation
+- [x] Template RDW-001: Wire Concentration — round-dollar pattern
+- [x] Copy-to-clipboard on every template page
+- [x] Legal disclaimer on every template page
+- [x] HubSpot form embed code in TemplateLayout (commented — activate after HubSpot setup)
+
+**Deployment (manual steps — follow `econofi-sar-library/DEPLOY.md`):**
+- [ ] Push to GitHub — create repo, `git push`
+- [ ] Connect to Netlify — build: `npm run build`, publish: `dist`
+- [ ] Cloudflare DNS — CNAME `sar` → Netlify site URL, orange cloud
+- [ ] Add custom domain `sar.econofi.app` in Netlify — SSL auto-provisions
+- [ ] Replace `YOUR_HUB_ID` in BaseLayout.astro with numeric HubSpot Hub ID
+- [ ] Create Word download form in HubSpot — activate embed in TemplateLayout.astro
+- [ ] Verify HubSpot tracking — page visits appear in Traffic Analytics within 24 hours
 
 **Validation gate**: A BSA Officer can land on the library, find a template,
 read the MDI Context callout, and copy or download the narrative in under
@@ -365,16 +367,14 @@ read the MDI Context callout, and copy or download the narrative in under
 **Goal**: Complete the 12-template MVP set. Add Fuse.js search.
 Activate HubSpot lead nurture workflows.
 
-| Status | Task | Detail |
-|---|---|---|
-| [ ] | 8 remaining MVP templates | Complete all primary pattern categories and variants |
-| [ ] | Word document files | `.docx` per template, with customization guidance as comments |
-| [ ] | Fuse.js search | Client-side full-text search across all template content |
-| [ ] | Update subscription form | Email-only form → pattern-specific HubSpot list |
-| [ ] | HubSpot Workflow 1 | First download → 3-day delay → educational email on that pattern |
-| [ ] | HubSpot Workflow 2 | 3 downloads → warm lead flag → sales notification |
-| [ ] | Custom contact properties | `sar_library_download_count`, `first_pattern_downloaded`, `patterns_downloaded` |
-| [ ] | Sitemap submission | Google Search Console |
+- [ ] 8 remaining MVP templates — complete all primary pattern categories and variants
+- [ ] Word `.docx` files per template — customization guidance as inline comments
+- [ ] Fuse.js search — client-side full-text search across all template content
+- [ ] Update subscription form — email-only form → pattern-specific HubSpot list
+- [ ] HubSpot Workflow 1 — first download → 3-day delay → educational email on that pattern
+- [ ] HubSpot Workflow 2 — 3 downloads → warm lead flag → sales notification
+- [ ] Custom contact properties — `sar_library_download_count`, `first_pattern_downloaded`, `patterns_downloaded`
+- [ ] Sitemap submission to Google Search Console
 
 **Validation gate**: 3+ downloads trigger Workflow 2. Fuse.js returns relevant
 results for "structuring" and "dormant account" queries.
@@ -385,13 +385,11 @@ results for "structuring" and "dormant account" queries.
 
 **Goal**: Credit union-specific content. FATF Watch email operational.
 
-| Status | Task | Detail |
-|---|---|---|
-| [ ] | Credit union template variants | Institution type toggle on each template — CU-specific MDI Context |
-| [ ] | NCUA BSA citations | Parallel citations for credit union audiences alongside FinCEN |
-| [ ] | HubSpot Workflow 3 | Template update alert email to pattern subscribers |
-| [ ] | HubSpot Workflow 4 | FATF Watch — all `sar_library_visitor` contacts |
-| [ ] | FATF update process | Documented internal process: FATF meeting → update templates → trigger Workflow 3 |
+- [ ] Institution type toggle (bank / credit union) on each template — CU-specific MDI Context callout
+- [ ] NCUA BSA citations alongside FinCEN citations for credit union audiences
+- [ ] HubSpot Workflow 3 — template update alert email to pattern subscribers
+- [ ] HubSpot Workflow 4 — FATF Watch email to all `sar_library_visitor` contacts
+- [ ] Internal FATF update process documented — FATF meeting → update templates → trigger Workflow 3
 
 **Validation gate**: A credit union BSA Officer (e.g. Seaway follow-up contact)
 receives the correct CU-variant template with NCUA citations. First FATF Watch
@@ -403,13 +401,11 @@ email deployed to subscriber list.
 
 **Goal**: Industry recognition. Organic search traction. Benchmark survey launch.
 
-| Status | Task | Detail |
-|---|---|---|
-| [ ] | MDI Compliance Burden survey | 10-question survey to BSA/CRA Officers — distributed to SAR library subscriber list |
-| [ ] | NBA / NAOBA outreach | Submit library as a free resource to National Bankers Association newsletter |
-| [ ] | SEO audit | Review search rankings for target keyword clusters, update meta and content |
-| [ ] | Benchmark report | Publish aggregated survey results as free PDF |
-| [ ] | Cross-link from compliance agents site | Link TransactionMonitor product page → SAR library and back |
+- [ ] MDI Compliance Burden survey — 10 questions, distributed to SAR library subscriber list
+- [ ] NBA / NAOBA outreach — submit library as free resource to National Bankers Association newsletter
+- [ ] SEO audit — review keyword rankings for target clusters, update meta and content
+- [ ] Benchmark report — publish aggregated survey results as free PDF
+- [ ] Cross-link: TransactionMonitor product page → SAR library and back
 
 **Validation gate**: SAR library appears in Google Search Console for at least
 3 target keyword clusters. Benchmark survey has 25+ responses.
