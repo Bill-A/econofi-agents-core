@@ -6,7 +6,7 @@
 **Overall Status**: BSA/AML TransactionMonitor — implementation complete, 92/92 tests passing. Day 2 (API layer + CRA DataGuard) ready to begin.
 **First Deliverable**: BSA/AML TransactionMonitor — complete. Active pilot outreach: Seaway Self Help Credit Union (meeting May 1, 2026).
 
-*Last updated: April 29, 2026*
+*Last updated: April 30, 2026 — Sprint 2 Blocks 1–3 + nav/UI polish complete*
 
 ---
 
@@ -362,14 +362,35 @@ read the MDI Context callout, and copy or download the narrative in under
 
 ---
 
-### Sprint 2 — Full MVP Template Set + Search + Workflows (NEXT)
+### Sprint 2 — Full MVP Template Set + Search + Workflows (NOW — In Progress)
 
 **Goal**: Complete the 12-template MVP set. Add Fuse.js search.
 Activate HubSpot lead nurture workflows.
 
-- [ ] 8 remaining MVP templates — complete all primary pattern categories and variants
-- [ ] Word `.docx` files per template — customization guidance as inline comments
-- [ ] Fuse.js search — client-side full-text search across all template content
+**Block 1 complete (2026-04-30):**
+- [x] 8 new SAR narrative templates — STR-003, STR-004, VEL-002, VEL-004, GEO-002, RDW-002, MUL-001, MUL-002
+- [x] Multiple Indicators category added to library index and nav
+- [x] All category index pages updated — available counts reflect new templates
+- [x] 18-page build passes; deployed to sar.econofi.app
+
+**Block 2 complete (2026-04-30):**
+- [x] Word `.docx` files per template — 12 files, ~12KB each, amber-highlighted placeholders, MDI Context callout
+- [x] `scripts/generate-docx.mjs` — `npm run generate-docx` rebuilds all files
+- [x] Download delivery: localStorage + `/download-ready/` page + HubSpot form redirect
+- [x] HubSpot form "On-submit action" set to Redirect → `https://sar.econofi.app/download-ready/`
+- [x] Validated end-to-end: form submit → redirect → "Your document is ready" → .docx downloads
+
+**Block 3 complete (2026-04-30):**
+- [x] Fuse.js client-side search — 12-template index, searches by pattern code (weight 3), title (weight 2), keywords (weight 1), category (weight 0.5)
+- [x] Search input on library index — category grid hides while active, restores on clear
+- [x] Search border fix — `gray-200` was invisible against white background; changed to `gray-400`
+
+**Block 3 UI polish complete (2026-04-30):**
+- [x] Nav: "SAR Library" tab → `/` added to all pages
+- [x] Nav: Open Sans 16px, link color `#eff2fb`, hover `#42e8e0` — matches econofi.app nav
+- [x] Nav: active-item state — `#00a4b4` text + 2px underline + bold; server-side path detection
+
+**Remaining blocks:**
 - [ ] Update subscription form — email-only form → pattern-specific HubSpot list
 - [ ] HubSpot Workflow 1 — first download → 3-day delay → educational email on that pattern
 - [ ] HubSpot Workflow 2 — 3 downloads → warm lead flag → sales notification
@@ -437,4 +458,4 @@ email deployed to subscriber list.
 
 ---
 
-*Last updated: April 29, 2026*
+*Last updated: April 30, 2026*
