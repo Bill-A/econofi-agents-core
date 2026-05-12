@@ -362,6 +362,20 @@ describe('Matched-Pair Testing', () => {
 
 ---
 
+## Agent Boundaries
+
+The LoanDataAnalyzer performs statistical analysis and surfaces evidence — it does not make legal determinations. These boundaries must be enforced at the system prompt level when the Agent Implementation Pattern section is added to this spec.
+
+- LoanDataAnalyzer detects statistical disparities — it does NOT determine that discrimination occurred; disparate impact is a statistical indicator, not a legal conclusion
+- Do not identify individual loan officers, branch managers, or employees as responsible for disparities — flag patterns at the institution level and leave attribution to legal counsel
+- Impact ratios below 0.80 trigger the legal review gate — they do not automatically constitute a Fair Lending violation; the violation determination is a legal and regulatory function
+- Regression coefficients showing race or sex as significant predictors are statistical findings — do not characterize them as proof of intentional discrimination; intent requires legal analysis
+- Do not recommend remediation actions (repricing, re-underwriting individual loans) — flag the disparity, quantify the affected population, and require General Counsel approval before any action
+- Analysis outputs are attorney-client privilege candidates — flag all disparate impact findings as potentially privileged and route through the Legal Review Gate before any external disclosure
+- Statistical significance at p < 0.05 is a threshold, not a certainty — always report confidence intervals and sample size limitations alongside impact ratios
+
+---
+
 ## Legal Review Gate
 
 ```typescript
@@ -371,7 +385,7 @@ describe('Matched-Pair Testing', () => {
 export class LegalReviewGate {
   async requestLegalReview(finding: DisparateImpactResult): Promise<void> {
     if (finding.disparate_impact_found && finding.severity !== 'none') {
-      // Upload findings to restricted Box folder
+      // Upload findings to restricted AWS S3 bucket (private, SSE-KMS)
       // Send urgent email to General Counsel
       // Poll for "APPROVED" or "REJECTED" comment
       // Block further processing until approval

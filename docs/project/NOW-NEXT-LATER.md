@@ -1,25 +1,25 @@
 # Econofi Agents — NOW / NEXT / LATER
 
 **Project**: Econofi Compliance Agents — MDI/CDFI Bank Compliance Automation
-**Repository**: `econofi-agents-core`
+**Repository**: `econofi-agents-core` (API + agents), `econofi-agents-ui` (demo UI)
 **Methodology**: Spec-Driven Development + 3-Day Implementation Sprint
-**Overall Status**: BSA/AML TransactionMonitor — implementation complete, 92/92 tests passing. Day 2 (API layer + CRA DataGuard) ready to begin.
-**First Deliverable**: BSA/AML TransactionMonitor — complete. Active pilot outreach: Seaway Self Help Credit Union (meeting May 1, 2026).
+**Overall Status**: Day 1–3 Sprint Complete — Demo UI Ready — May 11 Demo Confirmed
+**First Deliverable**: BSA/AML TransactionMonitor — regulation-stable, $59B industry spend, every bank, no framework uncertainty
 
-*Last updated: April 29, 2026*
+*Last updated: May 6, 2026 — 3-day sprint complete; May 11 demo with Demetra confirmed*
 
 ---
 
 ## Summary
 
-Six technical specifications are complete; a seventh (RegulatoryWatcher) is in progress. The 3-Day Implementation Sprint can begin immediately. CRA agent scaffolding (DataGuard, NarrativeWriter, shared infrastructure, migrations) is in place; BSA/AML agent implementation begins on Day 1.
+Six technical specifications are complete; a seventh (RegulatoryWatcher) is in progress. The 3-Day Implementation Sprint is complete for BSA/AML. BSA/AML agent, API routes, and demo UI are all implemented and test-green. CRA DataGuard is scaffolded and ready for implementation.
 
 **First deliverable rationale**: BSA/AML is the highest-spend compliance burden ($59B/year), every bank has a BSA Officer with a budget, and the regulatory framework is stable. CRA module development continues in parallel but BSA/AML leads the sprint and the sales conversation.
 
 **Critical product boundary — two distinct CRA products:**
 
 | Product | What it does | Buyer | CRA hook |
-| --- | --- | --- | --- |
+|---|---|---|---|
 | CRA DataGuard + NarrativeWriter (this repo) | HMDA LAR validation, auto-correction, CRA performance narrative generation | CRA Officer / compliance team | Exam prep narrative and data integrity |
 | White-label financial platform (econofi-calculator repo) | Quarterly impact reports: LMI users served, census tract distribution, engagement metrics | MDI Executive | Community Development Test credit documentation |
 
@@ -28,22 +28,20 @@ The MDI executive sales pitch — mission alignment, CRA Community Development T
 **Completion by layer:**
 
 | Layer | Spec Status | Implementation Status | Sprint Priority |
-| --- | --- | --- | --- |
-| BSA/AML TransactionMonitor | Complete | Not started — Day 1 begins sprint | Day 1 |
+|---|---|---|---|
+| BSA/AML TransactionMonitor | Complete | **COMPLETE** — agent, API routes, 77 tests GREEN | Day 1 |
 | CRA DataGuard | Complete | Scaffolded — agent, routes, tests, migrations committed | Day 2 |
 | CRA NarrativeWriter | Complete | Scaffolded — agent, routes, tests committed | Week 1-2 |
 | LIHTC/NMTC ComplianceMonitor | Complete | Not started | Week 5-6 |
 | Fair Lending LoanDataAnalyzer | Complete | Not started | Week 5-6 |
-| HTTP API Layer | Complete | Scaffolded — shared middleware, Supabase client, pino logger committed | Day 2 (BSA/AML endpoints) |
+| HTTP API Layer | Complete | **COMPLETE** — POST /v1/transactions/screen, GET /v1/alerts, GET /v1/alerts/:id, PATCH /v1/alerts/:id | Day 2 (BSA/AML endpoints) |
 | RegulatoryWatcher | In Progress | Not started | Weeks 3-4 |
 
 ---
 
-## NOW — Pre-Sprint Preparation
+## NOW — Sprint Complete + Demo
 
-**Goal**: Everything in place to begin Day 1 of the 3-Day Implementation Sprint.
-
-*Status updated April 22, 2026 — pre-sprint preparation complete. All blocking items resolved. Sprint ready to begin.*
+*Status updated May 6, 2026 — sprint days 1–3 complete; demo UI shipped.*
 
 ### Repository Scaffold
 
@@ -56,7 +54,7 @@ The MDI executive sales pitch — mission alignment, CRA Community Development T
 - [x] CRA routes scaffolded: `POST /v1/cra/validate`, `POST /v1/cra/narrative`, `POST /v1/cra/chat`
 - [x] CRA test files scaffolded: `dataGuard.test.ts`, `narrativeWriter.test.ts`, `chatAgent.test.ts`
 - [x] Migrations committed: `001_create_bsa_aml_schema.sql` through `004_create_chat_schema.sql`
-- [x] **Install Supabase CLI and confirm `supabase start` runs local stack** — CLI v2.90.0 installed; `supabase init` complete; local stack running
+- [x] Install Supabase CLI and confirm `supabase start` runs local stack — CLI v2.90.0 installed; `supabase init` complete; local stack running
 - [ ] **Confirm Supabase staging project has RLS enabled** — deferred; verify before pilot deployment, not required for sprint
 
 ### Test Data Preparation
@@ -67,82 +65,138 @@ The MDI executive sales pitch — mission alignment, CRA Community Development T
 
 ### Sprint Stakeholder
 
-- [x] Day 3 demo participant confirmed — CEO with AI assistant proxying as BSA Officer
-- [ ] Prepare demo scenario brief: structuring pattern detection + alert dashboard + investigation workflow
+- [x] Demo participant confirmed — Demetra (CEO, co-founder acting as proxy BSA Officer) — **May 11, 2026**
+- [x] Demo scenario brief: structuring pattern detection + alert dashboard + investigation workflow
 
 ### Dependencies to Confirm
 
 - [x] Anthropic API key set — `ANTHROPIC_API_KEY` populated in `.env`
 - [x] FFIEC access confirmed — public API, no key required; `FFIEC_GEOCODE_API_URL` set
 - [x] AWS credentials set — `AWS_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` populated
-- [ ] **Supabase staging project tier confirmed sufficient for RLS + real-time** — deferred; not required for sprint
-- [x] **Local database running** — Supabase CLI local stack replaces standalone PostgreSQL; `supabase start` confirmed running
+- [ ] Supabase staging project tier confirmed sufficient for RLS + real-time — deferred; not required for sprint
+- [x] Local database running — Supabase CLI local stack replaces standalone PostgreSQL; `supabase start` confirmed running
 
 ---
 
-### Day 1 — BSA/AML TransactionMonitor (NOW — In Progress)
+### Day 1 — BSA/AML TransactionMonitor (COMPLETE)
 
-**Morning: Core Detection Patterns**
+#### Morning: Core Detection Patterns
 
-- [ ] Copy test cases from `specs/bsa-aml/TRANSACTION_MONITOR_SPEC.md` to `tests/bsa-aml/transactionMonitor.test.ts`
-- [ ] Run tests — all fail (RED phase confirmed)
-- [ ] Implement `TransactionMonitorAgent` TypeScript class
-- [ ] Implement structuring detection (deposits <$10K to evade CTR, 31 USC §5324)
-- [ ] Implement velocity anomaly detection (dormant account sudden activation)
-- [ ] Implement round-dollar pattern analysis
-- [ ] Implement geographic risk scoring (FATF blacklist/greylist countries)
-- [ ] Implement customer segmentation and peer comparison
+- [x] Copy test cases from `specs/bsa-aml/TRANSACTION_MONITOR_SPEC.md` to `tests/bsa-aml/transactionMonitor.test.ts`
+- [x] Run tests — all fail (RED phase confirmed)
+- [x] Implement `TransactionMonitorAgent` TypeScript class
+- [x] Implement structuring detection (deposits <$10K to evade CTR, 31 USC §5324)
+- [x] Implement velocity anomaly detection (dormant account sudden activation)
+- [x] Implement round-dollar pattern analysis
+- [x] Implement geographic risk scoring (FATF blacklist/greylist countries)
+- [x] Implement customer segmentation and peer comparison
 
-**Afternoon: Remaining Patterns + Alert Generation**
+#### Afternoon: Remaining Patterns + Alert Generation
 
-- [ ] Implement CTR threshold approach detection (multiple cash transactions near $10K)
-- [ ] Implement multiple account rapid movement detection
-- [ ] Implement shell entity indicator detection
-- [ ] Implement `SuspiciousActivityAlert` generation with SAR narrative support and regulatory citations
-- [ ] Implement PII sanitization (customer tokens passed to Claude — no names or SSNs)
-- [ ] Run full test suite against synthetic transaction fixtures
+- [x] Implement CTR threshold approach detection (multiple cash transactions near $10K)
+- [x] Implement multiple account rapid movement detection
+- [x] Implement shell entity indicator detection
+- [x] Implement `SuspiciousActivityAlert` generation with SAR narrative support and regulatory citations
+- [x] Implement PII sanitization (customer tokens passed to Claude — no names or SSNs)
+- [x] Run full test suite against synthetic transaction fixtures
 
-**Day 1 Validation Gate**:
-- All TransactionMonitor unit tests pass (GREEN)
-- Structuring pattern detected on synthetic transaction sequence with 31 USC §5324 citation
-- Normal transaction returns `alert: null`
-- Single transaction screened within 200ms SLA
+**Day 1 Validation Gate**: All TransactionMonitor unit tests pass (GREEN) — Structuring pattern detected on synthetic transaction sequence with 31 USC §5324 citation — Normal transaction returns `alert: null` — Single transaction screened within 200ms SLA
 
 ---
 
-## NEXT — Remaining Sprint + Post-Sprint
+### Day 2 Morning — HTTP API Layer: BSA/AML Endpoints (COMPLETE)
 
-### Pre-Sprint
+- [x] `POST /v1/transactions/screen` — calls TransactionMonitor, synchronous, <200ms SLA
+- [x] `GET /v1/alerts` — paginated alert list, bank-scoped via RLS
+- [x] `GET /v1/alerts/:alert_id` — single alert detail
+- [x] `PATCH /v1/alerts/:alert_id` — investigation status update, immutable audit trail
+- [x] JWT authentication middleware (`authenticateRequest` + `extractBankId`)
+- [x] PostgreSQL RLS context setter (`SET app.current_bank_id`)
+- [x] Audit log writer (`api_audit_log` table — no UPDATE or DELETE)
+- [x] PII detector at API boundary (reject 422 `PII_DETECTED` on SSN/account pattern match)
+- [x] `ApiResponse<T>` envelope wrapper with `meta.request_id`, `meta.bank_id`, `meta.api_version`
 
-Completed — scaffold initialized, BSA/AML fixtures committed, 77 tests green, demo participant confirmed.
+**Day 2 Morning Validation Gate**: `POST /v1/transactions/screen` returns screening result — `GET /v1/alerts` returns bank-scoped results — `PATCH /v1/alerts/:alert_id` updates investigation status — PII in request body returns 422 `PII_DETECTED`
 
 ---
 
-### Day 2 — HTTP API Layer (BSA/AML) + CRA DataGuard
+### Day 3 — Demo UI (COMPLETE)
 
-**Morning: HTTP API Layer — BSA/AML Endpoints**
+**Demo UI repository**: `econofi-agents-ui` (Next.js 16, React 19, TypeScript strict, TDD)
 
-Wire the Sprint Required BSA/AML endpoints using Fastify:
+#### Screens built
 
-- [ ] `POST /v1/transactions/screen` — calls TransactionMonitor, synchronous, <200ms SLA
-- [ ] `GET /v1/alerts` — paginated alert list, bank-scoped via RLS
-- [ ] `PATCH /v1/alerts/:alert_id` — investigation status update, immutable audit trail
+- [x] **Transaction Screener** (`/screen`) — Server Action, pre-populated structuring scenario (amount=$9,800, cash deposit, [PERSON_001]), 10/10 tests GREEN
+- [x] **Alert Dashboard** (`/alerts`) — Server Component, paginated list, severity + status filters, risk score bars, "Investigate" link per row
+- [x] **Alert Detail** (`/alerts/:alert_id`) — Server Component, investigation form, SAR reference field conditional on `sar_filed` status, status update via Server Action
+- [x] **Demo seed script** — `npm run seed:demo` from `econofi-agents-core` — inserts 3 pre-built alerts (structuring HIGH, velocity CRITICAL, geographic MEDIUM); idempotent, re-runnable
 
-Shared infrastructure (build once, used by all modules):
+#### Demo readiness checklist (complete before May 11)
 
-- [ ] JWT authentication middleware (`authenticateRequest` + `extractBankId`)
-- [ ] PostgreSQL RLS context setter (`SET app.current_bank_id`)
-- [ ] Audit log writer (`api_audit_log` append-only table — no UPDATE or DELETE)
-- [ ] PII detector at API boundary (reject 422 `PII_DETECTED` on SSN/account pattern match)
-- [ ] `ApiResponse<T>` envelope wrapper with `meta.request_id`, `meta.bank_id`, `meta.api_version`
+```bash
+# 1. Start Docker Desktop (from the app, not terminal)
 
-**Day 2 Morning Validation Gate**:
-- `POST /v1/transactions/screen` returns structuring alert within 200ms
-- `GET /v1/alerts` returns bank-scoped results only (RLS confirmed via cross-tenant test)
-- `PATCH /v1/alerts/:alert_id` writes immutable audit log row
-- PII in request body returns 422 `PII_DETECTED`
+# 2. econofi-agents-core — start local Supabase stack
+npx supabase start
+npx supabase db push          # apply migrations if not already applied
+npm run seed:demo             # insert 3 demo alerts (idempotent, re-runnable)
 
-**Afternoon: CRA DataGuard**
+# 3. econofi-agents-core — start API server
+PORT=3001 npm run dev
+
+# 4. econofi-agents-ui — start UI server (new terminal tab)
+npm run dev
+```
+
+Verify before the call: `GET http://localhost:3001/v1/alerts` returns 3 seeded alerts, then walk all 3 screens end-to-end.
+
+**Day 3 Validation Gate**: BSA Officer identifies at least one manual process the platform eliminates — Sprint retrospective notes captured in `docs/SPRINT_RETROSPECTIVE.md`
+
+---
+
+## NEXT — Alert Dashboard Deployment + CRA DataGuard
+
+### Alert Dashboard — Full Stack Deployment (~half day)
+
+TransactionMonitor (`econofi-demo`) is deployed at `econofi-demo.netlify.app` — pure client-side, no backend.
+The Alert Dashboard (`econofi-agents-ui` + `econofi-agents-core`) requires three services deployed and wired together.
+
+#### 1. Frontend — `econofi-agents-ui` → Vercel or Netlify
+
+- [ ] Push `econofi-agents-ui` to a GitHub repo
+- [ ] Connect repo to Vercel (preferred for Next.js) or Netlify
+- [ ] Set build command: `npm run build`, output: `.next`
+- [ ] Set environment variable: `API_URL=<deployed backend URL>`
+- [ ] Deploy — confirm Alert Dashboard loads at production URL
+- [ ] Set custom domain `app.econofi.app` (or similar) when ready
+
+#### 2. Backend — `econofi-agents-core` → Railway or Render
+
+- [ ] Push `econofi-agents-core` to a GitHub repo
+- [ ] Create a new Railway or Render service (Node.js, free tier sufficient for demo)
+- [ ] Set all environment variables from `.env` (exclude `DATABASE_URL` local — use cloud Supabase URL)
+- [ ] Set `PORT=3001`, `NODE_ENV=production`
+- [ ] Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to cloud project values (see step 3)
+- [ ] Deploy — confirm `GET /v1/alerts` returns 200 with valid JWT
+
+#### 3. Database — Switch local Supabase → cloud Supabase project
+
+- [ ] Log in to supabase.com — the cloud project already exists (`ljhqickbsxxwmpsrvnpl`)
+- [ ] Run migration `001_create_bsa_aml_schema.sql` against the cloud project (Supabase Studio SQL editor or `supabase db push --linked`)
+- [ ] Grant schema permissions: `GRANT USAGE ON SCHEMA bsa_aml TO service_role; GRANT ALL ON ALL TABLES IN SCHEMA bsa_aml TO service_role;`
+- [ ] Create `public.set_app_context(bank_id_value text)` wrapper function in cloud Studio (same SQL used locally)
+- [ ] Re-run `npx ts-node scripts/seed-demo.ts` with `SUPABASE_URL` pointing to cloud project — seeds 4 demo alerts
+- [ ] Confirm RLS is enabled on `bsa_aml.alerts` in the cloud project
+
+#### 4. Wire and verify
+
+- [ ] Update `API_URL` in Vercel/Netlify to point to the deployed Railway/Render backend URL
+- [ ] Confirm `GET <backend>/v1/alerts` returns seeded alerts through the deployed UI
+- [ ] Confirm SAR narrative panel appears when status is set to SAR Filed
+
+---
+
+### Day 2 Afternoon — CRA DataGuard (deferred from sprint)
 
 - [ ] Generate 200 synthetic CRA loan records in HMDA LAR format (mix: valid, fixable, unfixable) — commit to `tests/fixtures/synthetic/cra-loan-records.json` before DataGuard TDD begins
 - [ ] Copy test cases from `specs/cra/DATA_GUARD_SPEC.md` to `tests/cra/dataGuard.test.ts`
@@ -152,41 +206,10 @@ Shared infrastructure (build once, used by all modules):
 - [ ] Implement FFIEC API integration for census tract verification
 - [ ] Implement auto-correction with confidence scoring (threshold: 0.80)
 - [ ] Implement exception report generation (CRITICAL / HIGH / MEDIUM / LOW)
-- [ ] Add CRA framework feature flag: `CRA_FRAMEWORK: '1995_legacy' | '2023_modern'` — controls evaluation criteria path; stored in regulatory threshold config table, not hardcoded
+- [ ] Add CRA framework feature flag: `CRA_FRAMEWORK: '1995_legacy' | '2023_modern'`
 - [ ] Wire `POST /v1/cra/validate` endpoint
 
-**Day 2 Afternoon Validation Gate**:
-- All DataGuard unit tests pass (GREEN)
-- Invalid census tract returns CRITICAL exception with 12 CFR §228.42 citation
-- `POST /v1/cra/validate` returns exception report via authenticated API
-
----
-
-### Day 3 — BSA Officer Demo + Refinement
-
-**Morning: Demo Session**
-
-Scenario flow (2 hours with BSA Officer at target MDI bank):
-
-1. Submit batch of synthetic transactions -> `POST /v1/transactions/screen`
-2. Review alert dashboard -> `GET /v1/alerts` -> see structuring and velocity anomaly alerts
-3. Update investigation status -> `PATCH /v1/alerts/:alert_id` -> confirm audit trail entry
-4. Walk through SAR narrative support output and regulatory citations (31 USC §5324, 31 CFR §1020.320)
-5. Discuss how the platform replaces current manual review process
-
-**Afternoon: Refinement**
-
-- [ ] Capture top 3 priority fixes from BSA Officer feedback
-- [ ] Implement fixes
-- [ ] Re-run full test suite — confirm GREEN
-
-**Day 3 Validation Gate**:
-- BSA Officer identifies at least one manual process the platform eliminates
-- Sprint retrospective notes captured in `docs/SPRINT_RETROSPECTIVE.md`
-
----
-
-## LATER — 8-Week Post-Sprint Roadmap
+**Validation Gate**: All DataGuard unit tests pass (GREEN) — Invalid census tract returns CRITICAL exception with 12 CFR §228.42 citation — `POST /v1/cra/validate` returns exception report via authenticated API
 
 ### Weeks 1–2: CRA NarrativeWriter + BSA/AML Full Build
 
@@ -198,54 +221,27 @@ Scenario flow (2 hours with BSA Officer at target MDI bank):
 
 **Milestone**: NarrativeWriter generates a complete DRAFT CRA narrative from 200 synthetic loan records. BSA/AML batch processes 50K transactions in under 5 minutes.
 
----
-
 ### Weeks 3–4: HTTP API Layer — Full Build
 
 Complete remaining 12 post-sprint endpoints:
 
-**BSA/AML**
-- [ ] `POST /v1/transactions/batch` (async, up to 50K transactions)
-- [ ] `GET /v1/transactions/batch/:job_id` (poll)
+**BSA/AML** — `POST /v1/transactions/batch` (async, up to 50K) — `GET /v1/transactions/batch/:job_id` (poll)
 
-**CRA**
-- [ ] `POST /v1/cra/batch` (async, up to 10K records)
-- [ ] `GET /v1/cra/reports/:job_id`
-- [ ] `GET /v1/cra/narrative/:job_id`
-- [ ] `POST /v1/cra/narrative` (triggers NarrativeWriter; enforces UPSTREAM_CRITICAL_ERRORS halt)
-- [ ] `POST /v1/cra/narrative/:job_id/acknowledge` (immutable acknowledgment log)
+**CRA** — `POST /v1/cra/batch` — `GET /v1/cra/reports/:job_id` — `GET /v1/cra/narrative/:job_id` — `POST /v1/cra/narrative` (enforces `UPSTREAM_CRITICAL_ERRORS` halt) — `POST /v1/cra/narrative/:job_id/acknowledge` (immutable acknowledgment log)
 
-**Fair Lending**
-- [ ] `POST /v1/fair-lending/analyze` (async regression analysis)
-- [ ] `GET /v1/fair-lending/reports/:job_id`
-- [ ] `GET /v1/fair-lending/examiner-prep/:job_id`
+**Fair Lending** — `POST /v1/fair-lending/analyze` — `GET /v1/fair-lending/reports/:job_id` — `GET /v1/fair-lending/examiner-prep/:job_id`
 
-**LIHTC/NMTC**
-- [ ] `POST /v1/lihtc-nmtc/scan`
-- [ ] `GET /v1/lihtc-nmtc/portfolio`
-- [ ] `POST /v1/lihtc-nmtc/investments/:id/certifications`
-- [ ] `POST /v1/lihtc-nmtc/certifications/:id/acknowledge`
+**LIHTC/NMTC** — `POST /v1/lihtc-nmtc/scan` — `GET /v1/lihtc-nmtc/portfolio` — `POST /v1/lihtc-nmtc/investments/:id/certifications` — `POST /v1/lihtc-nmtc/certifications/:id/acknowledge`
 
-**Shared**
-- [ ] Idempotency middleware (`X-Idempotency-Key`, 24-hour cache)
-- [ ] Rate limiting (per tier: Sandbox/Starter/Professional/Enterprise)
-- [ ] Webhook delivery (HMAC-SHA256 signed, retry with backoff)
-- [ ] API key + HMAC-SHA256 authentication for ISV partners
-- [ ] Generate `openapi/v1.yaml` (OpenAPI 3.1 — machine-readable contract)
-- [ ] Postman collection for all endpoints
+**Shared** — Idempotency middleware (`X-Idempotency-Key`, 24-hour cache) — Rate limiting (per tier: Sandbox/Starter/Professional/Enterprise) — API key + HMAC-SHA256 for ISV partners — `openapi/v1.yaml` (OpenAPI 3.1) — Postman collection
 
-**RegulatoryWatcher Agent**
-- [ ] Finalize `specs/regulatory-watcher/REGULATORY_WATCHER_SPEC.md`
-- [ ] Implement `RegulatoryWatcherAgent` — scheduled poller for FinCEN, CFPB, OCC, FATF, FFIEC
-- [ ] Map detected changes to config table rows and affected modules
-- [ ] Emit `regulatory.update_detected` webhook with plain-English impact summary
-- [ ] Wire `GET /v1/regulatory/updates` + `POST /v1/regulatory/updates/:id/acknowledge`
-- [ ] Schedule: daily Federal Register RSS + weekly FATF grey/black list diff
-- [ ] Integration test: simulated FinCEN SAR threshold change updates `SAR_MINIMUM_AMOUNT` config row and emits webhook
+**RegulatoryWatcher Agent** — Finalize spec — Implement scheduled poller for FinCEN, CFPB, OCC, FATF, FFIEC — Map detected changes to config table rows — Emit `regulatory.update_detected` webhook — `GET /v1/regulatory/updates` + `POST /v1/regulatory/updates/:id/acknowledge` — Schedule: daily Federal Register RSS + weekly FATF grey/black list diff
 
 **Milestone**: Full Postman collection passes against staging. OpenAPI spec committed. RegulatoryWatcher detects a simulated threshold change and emits a correctly formed webhook.
 
 ---
+
+## LATER — Weeks 5–8: Scale + Pilot
 
 ### Weeks 5–6: Fair Lending + ComplianceMonitor + Security Hardening
 
@@ -259,8 +255,6 @@ Complete remaining 12 post-sprint endpoints:
 - [ ] Data retention policy: BSA/AML 5 years, CRA 3 years, Fair Lending 25 months
 
 **Milestone**: All five agents passing full unit test suites. Security assessment report signed off.
-
----
 
 ### Weeks 7–8: Pilot Preparation + BSA Officer Pilot
 
@@ -278,23 +272,41 @@ Complete remaining 12 post-sprint endpoints:
 
 ## Demo Readiness
 
-A client demo is not on the critical path. The sprint produces working code; the test fixtures committed during Day 1 pre-sprint preparation serve as demo data if a client meeting materializes.
+**Status: READY — CEO demo rescheduled to May 13, 2026**
 
-If a confirmed meeting with a BSA Officer or CRA Officer arises before the sprint is complete, a scripted demo can be assembled without rebuilding anything:
+TransactionMonitor deployed at `https://econofi-demo.netlify.app` — no local setup required.
 
-- **Input data**: The synthetic transaction and LAR fixtures already committed to `tests/fixtures/`
-- **Output data**: SAR narratives, exception reports, and CRA narrative drafts generated by prompting Claude directly (not the agent pipeline) and pre-loaded into Supabase
-- **UI**: A Next.js shell (8 screens: 4 BSA/AML, 4 CRA) reading from pre-loaded Supabase data
-- **Effort**: 3.5-5.5 days if triggered — do not build speculatively
+Alert Dashboard runs locally. Start stack before the demo:
 
-Trigger condition: a confirmed meeting with a named compliance officer at a target institution. Aspirational targets do not trigger demo build.
+```bash
+# 1. Start Docker Desktop
+
+# 2. econofi-agents-core — start Supabase + seed + API
+npx supabase start
+npx ts-node -r tsconfig-paths/register scripts/seed-demo.ts
+PORT=3001 npm run dev
+
+# 3. econofi-agents-ui — start frontend (new terminal)
+npm run dev
+```
+
+Demo UI (`econofi-agents-ui`) screens:
+- About page — how to use the app + collapsible Demo Guide (5-minute walkthrough)
+- Alert Dashboard — paginated, filterable, risk score bars
+- Alert Detail — investigation form, SAR reference field, SAR narrative panel with Bank/CU toggle
+- Transaction Screener — spot-check tool, secondary to dashboard
+
+Seed data: **4 pre-built alerts** (structuring HIGH, velocity CRITICAL, geographic MEDIUM, round dollar HIGH).
+Structuring alert amounts corrected to match TransactionMonitor: $9,200 / $9,400 / $9,150.
+
+**5-minute demo path**: TransactionMonitor (localhost:5173 or econofi-demo.netlify.app) → transition to Alert Dashboard (localhost:3000) → investigate structuring alert → SAR Filed → narrative panel → download Word doc. Full script on the About page Demo Guide.
 
 ---
 
 ## Spec Files Reference
 
 | Module | Spec File | Status | Build Priority |
-| --- | --- | --- | --- |
+|---|---|---|---|
 | BSA/AML TransactionMonitor | `specs/bsa-aml/TRANSACTION_MONITOR_SPEC.md` | Complete | Sprint Day 1 |
 | CRA DataGuard | `specs/cra/DATA_GUARD_SPEC.md` | Complete | Sprint Day 2 |
 | HTTP API Layer | `specs/api/API_LAYER_SPEC.md` | Complete | Sprint Day 2 |
@@ -305,115 +317,10 @@ Trigger condition: a confirmed meeting with a named compliance officer at a targ
 
 ---
 
----
-
-## Marketing Initiatives — Rolling Wave Plan
-
-**IMPORTANT — for Claude Code sessions picking up this document:**
-This section is a separate work stream from the product engineering sprints above.
-It runs on its own independent cadence.
-
-- The product engineering side uses **Day 1 / Day 2 / Week 1–2** etc. as
-  calendar-anchored time units tied to the 3-Day Implementation Sprint.
-- The marketing side uses **Sprint 1 / Sprint 2** etc. as scope buckets only —
-  they have no implied calendar alignment to the product engineering timeline.
-- "SAR Library Sprint 1" does NOT mean the same calendar period as "Product Day 1"
-  or "Product Week 1." They are sequenced and prioritized independently.
-- These sprints are executed in separate Claude Code sessions focused exclusively
-  on the SAR library build. Do not conflate with the compliance agent implementation.
-
-Full spec: `docs/marketing/sar-narrative-library/SAR_NARRATIVE_LIBRARY_SPEC.md`
-
-**Rationale**: The SAR Narrative Library builds examiner-credibility and BSA Officer
-brand recognition before a product sale — the exact visibility gap that delays pilots.
-It is the highest-ROI marketing investment at this stage: free to host, demonstrates
-the NarrativeWriter output, generates a warm lead list of BSA Officers.
-
-### Sprint 1 — Infrastructure + 4 Templates (NOW)
-
-**Goal**: Live, usable library. One template per primary pattern category.
-**Stack**: Astro + Netlify + HubSpot tracking + HubSpot form embed
-**URL**: `sar.econofi.app` (Cloudflare CNAME → Netlify, orange cloud)
-**Code**: `econofi-sar-library/` — see `DEPLOY.md` for deployment steps
-
-**Code complete (Claude Code session):**
-- [x] Astro project scaffold — base layout, HubSpot tracking placeholder, mobile-responsive
-- [x] Library index page — 4 category cards, available/coming-soon per template
-- [x] Template STR-002: Smurfing — 31 USC §5324, MDI Context callout
-- [x] Template VEL-001: Dormant Account — velocity anomaly, MDI Context callout
-- [x] Template GEO-001: FATF Blacklist — geographic risk, FATF source citation
-- [x] Template RDW-001: Wire Concentration — round-dollar pattern
-- [x] Copy-to-clipboard on every template page
-- [x] Legal disclaimer on every template page
-- [x] HubSpot form embed code in TemplateLayout (commented — activate after HubSpot setup)
-
-**Deployment (manual steps — follow `econofi-sar-library/DEPLOY.md`):**
-- [ ] Push to GitHub — create repo, `git push`
-- [ ] Connect to Netlify — build: `npm run build`, publish: `dist`
-- [ ] Cloudflare DNS — CNAME `sar` → Netlify site URL, orange cloud
-- [ ] Add custom domain `sar.econofi.app` in Netlify — SSL auto-provisions
-- [ ] Replace `YOUR_HUB_ID` in BaseLayout.astro with numeric HubSpot Hub ID
-- [ ] Create Word download form in HubSpot — activate embed in TemplateLayout.astro
-- [ ] Verify HubSpot tracking — page visits appear in Traffic Analytics within 24 hours
-
-**Validation gate**: A BSA Officer can land on the library, find a template,
-read the MDI Context callout, and copy or download the narrative in under
-2 minutes. HubSpot contact record is created on Word download.
-
----
-
-### Sprint 2 — Full MVP Template Set + Search + Workflows (NEXT)
-
-**Goal**: Complete the 12-template MVP set. Add Fuse.js search.
-Activate HubSpot lead nurture workflows.
-
-- [ ] 8 remaining MVP templates — complete all primary pattern categories and variants
-- [ ] Word `.docx` files per template — customization guidance as inline comments
-- [ ] Fuse.js search — client-side full-text search across all template content
-- [ ] Update subscription form — email-only form → pattern-specific HubSpot list
-- [ ] HubSpot Workflow 1 — first download → 3-day delay → educational email on that pattern
-- [ ] HubSpot Workflow 2 — 3 downloads → warm lead flag → sales notification
-- [ ] Custom contact properties — `sar_library_download_count`, `first_pattern_downloaded`, `patterns_downloaded`
-- [ ] Sitemap submission to Google Search Console
-
-**Validation gate**: 3+ downloads trigger Workflow 2. Fuse.js returns relevant
-results for "structuring" and "dormant account" queries.
-
----
-
-### Sprint 3 — Credit Union Variants + Update Alerts (NEXT)
-
-**Goal**: Credit union-specific content. FATF Watch email operational.
-
-- [ ] Institution type toggle (bank / credit union) on each template — CU-specific MDI Context callout
-- [ ] NCUA BSA citations alongside FinCEN citations for credit union audiences
-- [ ] HubSpot Workflow 3 — template update alert email to pattern subscribers
-- [ ] HubSpot Workflow 4 — FATF Watch email to all `sar_library_visitor` contacts
-- [ ] Internal FATF update process documented — FATF meeting → update templates → trigger Workflow 3
-
-**Validation gate**: A credit union BSA Officer (e.g. Seaway follow-up contact)
-receives the correct CU-variant template with NCUA citations. First FATF Watch
-email deployed to subscriber list.
-
----
-
-### Sprint 4 — Authority + Distribution (LATER)
-
-**Goal**: Industry recognition. Organic search traction. Benchmark survey launch.
-
-- [ ] MDI Compliance Burden survey — 10 questions, distributed to SAR library subscriber list
-- [ ] NBA / NAOBA outreach — submit library as free resource to National Bankers Association newsletter
-- [ ] SEO audit — review keyword rankings for target clusters, update meta and content
-- [ ] Benchmark report — publish aggregated survey results as free PDF
-- [ ] Cross-link: TransactionMonitor product page → SAR library and back
-
-**Validation gate**: SAR library appears in Google Search Console for at least
-3 target keyword clusters. Benchmark survey has 25+ responses.
-
----
+## Key Decisions Log
 
 | Date | Decision | Rationale |
-| --- | --- | --- |
+|---|---|---|
 | March 2026 | BSA/AML leads the sprint and the sales motion | Regulation-stable, $59B spend, every bank has a BSA Officer, no framework uncertainty |
 | March 2026 | Section 1071 deprioritized — target 2027 cohort | 16-week sales cycle kills July 2026 first-mover play; real window is post-July replacement market |
 | March 2026 | Call Report excluded from roadmap | Data transformation, not intelligence; crowded vendor market; wrong AI use case |
@@ -427,14 +334,8 @@ email deployed to subscriber list.
 | Feb 2026 | `claude-opus-4-6` for NarrativeWriter (temp 0.3) | Narrative quality requires highest capability model; low temp for regulatory language consistency |
 | Feb 2026 | `claude-sonnet-4-6` for ComplianceMonitor (temp 0.0) | Deterministic covenant tracking; no creative interpretation |
 | March 2026 | RegulatoryWatcher added as Module 6 (Weeks 3-4) | Regulatory threshold config table needs a watcher to detect when rows must be updated; closes the loop between spec design and live regulatory change |
-| April 2026 | BSA/AML-first delivery order confirmed despite Sales Playbook (Apr 13, 2026) recommending CRA-first | Sales Playbook CRA-first argument depends on exam timing urgency (12-18 months from CRA exam). No target MDI in that window is currently identified. BSA/AML obligation is perpetual and universal — no exam window required to create urgency. Order revisited when a qualified CRA exam-timed target is in the pipeline. |
+| April 2026 | BSA/AML-first delivery order confirmed despite Sales Playbook recommending CRA-first | BSA/AML obligation is perpetual and universal — no exam window required to create urgency. CRA-first argument depends on exam timing urgency with no target MDI currently in that window. |
 | April 2026 | Supabase CLI replaces standalone PostgreSQL for local dev | Supabase local stack provides PostgreSQL + RLS + Auth + Realtime locally; standalone PostgreSQL does not exercise RLS, making tests non-representative of production behavior |
-| April 2026 | SAR Narrative Library as primary marketing investment | Free to host; demonstrates NarrativeWriter output without a demo; generates warm BSA Officer lead list; no competitor provides MDI-specific SAR narrative context. Full spec: `docs/marketing/sar-narrative-library/SAR_NARRATIVE_LIBRARY_SPEC.md` |
-| April 2026 | SAR library hosted at `sar.econofi.app` (subdomain, not subdirectory) | `www.econofi.app` resolves grey-cloud to HubSpot CDN — Cloudflare Worker cannot intercept. Subdomain via Cloudflare CNAME (orange cloud) → Netlify is zero-risk and deploys in under 10 minutes |
-| April 2026 | Rolling wave planning — Sprint 1 fully specified, Sprint 2–3 outlined, Sprint 4 themes | SAR library is unvalidated; BSA Officer behavior after Sprint 1 informs Sprint 2 scope. Full backlog upfront is waste. |
-| April 2026 | Master sales deck (16 slides) with audience routing — bank vs. credit union | CRA slides not applicable to credit unions; hiding slides per audience is lower maintenance than separate decks. Spec: `docs/marketing/SALES_DECK_REVISION.md` |
-| April 2026 | Seaway Self Help Credit Union identified as pilot credit union prospect (meeting May 1) | Division of Self-Help Federal CU ($2.3B assets, CDFI-certified); price on Seaway division assets (~$200M–$400M), not parent consolidated assets. Account brief: `docs/business/prospects/SEAWAY_SELF_HELP_CREDIT_UNION.md` |
-
----
-
-*Last updated: April 29, 2026*
+| May 2026 | Demo UI triggered — confirmed meeting with Demetra (May 11) | Named compliance officer at target institution confirmed; NNL trigger condition met |
+| May 2026 | Demo UI scoped to 3 screens; no Demo Setup in nav | Demo Setup is a pre-meeting operator task (seed script), not a BSA Officer workflow; showing it in nav is unprofessional in a compliance context |
+| May 2026 | `bank_id` changed to UUID format in demo JWT | `bank_customer_mapping.bank_id` column is `UUID NOT NULL`; RLS policy casts to `::UUID`; non-UUID string would error at query time |

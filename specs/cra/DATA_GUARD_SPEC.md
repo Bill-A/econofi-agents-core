@@ -219,7 +219,7 @@ export interface DataGuardOutput {
   validated_records: SanitizedLoanRecord[]; // Fully validated and corrected
   errors: LoanValidationError[];
   corrections: LoanAutoCorrection[];
-  exception_report_url?: string; // S3 or Box URL
+  exception_report_url?: string; // AWS S3 pre-signed URL
   performance_metrics: {
     total_duration_ms: number;
     avg_record_latency_ms: number;
@@ -428,6 +428,14 @@ CRITICAL RULES:
 - Flag CRITICAL errors that block CRA submission
 - Apply auto-corrections ONLY when confidence >80%
 - Document all corrections in audit trail
+
+AGENT BOUNDARIES:
+- DataGuard validates data quality — it does NOT determine whether a loan qualifies for CRA credit; CRA credit qualification requires examiner review
+- Auto-corrections are suggestions, not authoritative conclusions — all corrections are flagged in the audit trail and require human sign-off before final submission
+- Do not infer missing required fields from context — flag as missing and require human data entry or FFIEC API lookup; do not substitute estimated values
+- Do not assign CRA performance ratings or scores — DataGuard prepares data for examination; rating is the examiner's function
+- Exception reports are internal compliance tools — they must not be submitted to regulators without human review and sign-off
+- Census tract validation relies on FFIEC API data — if the API is unavailable, flag records for manual verification rather than making assumptions about tract codes
 
 CRA Data Collection Requirements (12 CFR §228.42):
 

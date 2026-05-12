@@ -1,0 +1,4 @@
+  GRANT USAGE ON SCHEMA bsa_aml TO service_role;
+  GRANT ALL ON ALL TABLES IN SCHEMA bsa_aml TO service_role;
+  GRANT ALL ON ALL SEQUENCES IN SCHEMA bsa_aml TO service_role;
+  ALTER DEFAULT PRIVILEGES IN SCHEMA bsa_aml GRANT ALL ON TABLES TO service_role;

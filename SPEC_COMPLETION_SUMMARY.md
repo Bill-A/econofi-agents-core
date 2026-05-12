@@ -237,7 +237,7 @@ The Budget Wizard implementation (completed Feb 12-14, 2026) used this same spec
 ## Files Created
 
 ```
-econofi-agents-v2/
+econofi-agents-core/
 ├── README.md (4,500+ lines)
 ├── SPEC_COMPLETION_SUMMARY.md (this file)
 ├── .gitignore
@@ -295,5 +295,5 @@ By writing specifications FIRST using test-driven methodology, we ensure:
 ---
 
 *Created: February 15, 2026*
-*Repository: econofi-agents-v2*
+*Repository: econofi-agents-core*
 *Methodology: Test-First Spec-Driven Development*

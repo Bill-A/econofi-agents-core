@@ -47,3 +47,10 @@ temp/
 *.key
 credentials.json
 secrets/
+
+# Supabase local dev
+.supabase/
+supabase/.temp/
+
+# Test fixtures with real bank data (synthetic fixtures ARE committed)
+tests/fixtures/real/

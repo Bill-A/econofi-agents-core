@@ -410,6 +410,14 @@ CRITICAL RULES:
 - Assign risk scores 0-100 with confidence levels
 - Recommend actions: monitor, investigate, file_sar, escalate_immediately
 
+AGENT BOUNDARIES:
+- TransactionMonitor flags suspicious patterns — it does NOT file SARs autonomously; SAR filing requires human authorization per 31 CFR §1020.320 and bank policy
+- Do not determine guilt or innocent intent — flag patterns and provide evidence; intent determination is a legal function
+- Do not recommend prosecution or law enforcement referral — recommend internal escalation only
+- Do not treat any single pattern as definitive proof of money laundering — provide risk scores with confidence levels and let compliance officers decide
+- Risk scores are decision-support tools, not determinations — a score of 100 does not mean a SAR must be filed; human judgment is required
+- Do not attempt to access, infer, or reason about redacted PII — if a pattern requires PII to confirm, flag for human investigation
+
 Detection Patterns:
 
 STRUCTURING (31 USC §5324):
@@ -1173,6 +1181,49 @@ scaling.scaleOnMetric('QueueDepthScaling', {
   ],
 });
 ```
+
+---
+
+## Historical Data Dependency
+
+### The Problem
+
+The `CustomerHistoricalContext` type used by pattern detection assumes populated aggregates (`avg_transaction_amount_6mo`, `deposit_count_6mo`, etc.). The `bsa_aml.customer_history` table has no data at onboarding. Without it, the TransactionMonitor falls back to generic peer cohort baselines, which increases false positive rates and makes velocity anomaly detection unreliable for the first 30–90 days of operation.
+
+The same gap affects any future conversational interface (e.g., TransactionMonitorChat) that queries `bsa_aml.transactions` for 90-day pattern lookups — if individual transactions were never loaded, the query returns empty.
+
+### Two-Phase Data Model
+
+**Phase 1 — Onboarding Backfill (one-time)**
+
+At go-live, the bank provides a historical transaction export via SFTP:
+- Format: fixed-width or CSV (bank's core banking standard — FIS, Fiserv, Jack Henry)
+- Date range: minimum 12 months; 18 months preferred
+- Content: all transaction types in `RawTransaction` shape
+- Loader sanitizes (PII → tokens/hashes) before inserting into `bsa_aml.transactions`
+- `bsa_aml.customer_history` aggregates computed from loaded data, not from defaults
+
+**Phase 2 — Daily Feed (ongoing)**
+
+End-of-day SFTP export appended to `bsa_aml.transactions`. After 90 days of live operation the rolling window is fully populated without depending on the backfill.
+
+### Deduplication Requirement
+
+The ingestion loader must be idempotent. Re-processing a previously loaded file must not create duplicate rows. Deduplication key: `transaction_id` (UNIQUE constraint already enforced in schema). Use `INSERT ... ON CONFLICT (transaction_id) DO NOTHING`.
+
+### Dependencies This Gap Creates
+
+| Capability | Requires |
+|---|---|
+| Velocity anomaly detection (accurate) | `customer_history` populated from real data |
+| 90-day pattern queries (TransactionMonitorChat) | `bsa_aml.transactions` backfill loaded |
+| SARDraftAgent context window | Individual transaction rows for the flagged account |
+
+### Build Priority
+
+The SFTP ingestion pipeline is not in the current 3-day sprint scope. It is a prerequisite for TransactionMonitorChat and for accurate velocity detection on new customers. Target: Weeks 3–4 alongside the full API layer build.
+
+Spec to be written: `specs/bsa-aml/SFTP_INGESTION_SPEC.md`
 
 ---
 

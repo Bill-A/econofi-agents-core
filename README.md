@@ -2,28 +2,74 @@
 
 **Version**: 2.0 (Specification-Driven)
 **Created**: February 15, 2026
-**Status**: Technical Specification Phase
-**Methodology**: Test-First Spec-Driven Development
+**Last Updated**: March 2026
+**Status**: Specifications Complete — Ready for Implementation Sprint
+**Methodology**: Design Sprint + Test-First Spec-Driven Development
 
 ---
 
 ## Overview
 
-This repository contains **implementation-ready technical specifications** for the Econofi Agents compliance automation platform. Unlike V1 (which contained business/product specs), V2 provides complete technical specifications ready for direct implementation.
+This repository contains **implementation-ready technical specifications** for the Econofi Agents compliance automation platform. Unlike V1 (which contained business/product specs), V2 provides complete technical specifications — TypeScript types, PostgreSQL schemas, TDD test cases, API contracts, Claude Agent SDK configs, and Agent Boundaries — ready for direct implementation.
 
 ### Design Philosophy
 
-**Spec-Driven > Vibe Coding**
+#### Spec-Driven + Sprint-as-Build > Sequential Waterfall
 
-Based on the success of the Budget Wizard implementation (which used test-first spec-driven development achieving 98.6% test coverage), these specifications include:
+Specifications are complete. The next step is not a long implementation phase — it is a compressed **3-Day Implementation Sprint** that produces a running prototype by day three. This approach, adapted from Google's Design Sprint methodology, integrates validation with implementation so that working code emerges from the sprint, not just refined documents.
 
-1. ✅ **TypeScript type definitions** - Complete interfaces ready to implement
-2. ✅ **Database schemas** - PostgreSQL DDL with migrations
-3. ✅ **Test cases FIRST** - TDD approach with expected inputs/outputs
-4. ✅ **API contracts** - Function signatures, parameters, return types
-5. ✅ **Claude Agent SDK patterns** - Integration examples
-6. ✅ **Error handling** - Comprehensive failure scenarios
-7. ✅ **Performance benchmarks** - SLAs and metrics
+The specification work already done (analogous to a Design Sprint's Day 1-2) gives the sprint a major head start: architecture is decided, types are defined, test cases are written, and agent boundaries are established. The sprint collapses the spec-to-prototype gap that typically takes months.
+
+#### 3-Day Implementation Sprint Plan
+
+##### Pre-Sprint (1 day before)
+
+- Stand up Node.js + TypeScript project scaffold
+- Configure Claude Agent SDK credentials and Supabase connection
+- Load test data: 100 synthetic transactions (mix: normal, structuring, velocity anomaly), 200 anonymized CRA loan records
+- Identify one BSA Officer at a target MDI bank for Day 3 validation demo
+
+##### Day 1 — BSA/AML TransactionMonitor Running
+
+- Morning: Implement TransactionMonitor agent against existing spec and test suite (`specs/bsa-aml/TRANSACTION_MONITOR_SPEC.md`)
+- Afternoon: Run end-to-end screening on synthetic transaction batch; verify all 8 detection patterns fire correctly and SAR alert generation works
+- End of day: Single transaction screened and returned within 200ms; structuring pattern detected with regulatory citation
+- Validation gate: All TransactionMonitor unit tests pass; structuring and velocity anomaly patterns detected; normal transaction returns null alert
+
+##### Day 2 — HTTP API Layer (BSA/AML) + CRA DataGuard
+
+- Morning: Expose TransactionMonitor through HTTP API layer (`specs/api/API_LAYER_SPEC.md`); wire `POST /v1/transactions/screen`, `GET /v1/alerts`, `PATCH /v1/alerts/:alert_id`; confirm bank-scoped auth, PII boundary, and immutable audit log
+- Afternoon: Implement CRA DataGuard against spec (`specs/cra/DATA_GUARD_SPEC.md`); validate synthetic loan records; confirm CRITICAL exception blocks downstream pipeline
+- End of day: BSA/AML endpoints callable via authenticated POST; DataGuard flags invalid census tract as CRITICAL and returns exception report
+- Validation gate: `POST /v1/transactions/screen` returns alert within 200ms; `GET /v1/alerts` returns bank-scoped results; DataGuard CRITICAL exception blocks NarrativeWriter
+
+##### Day 3 — BSA Officer Demo + Refinement
+
+- Morning: Demo the end-to-end BSA/AML pipeline to a BSA Officer at a target MDI bank; walk through transaction screening, alert generation, investigation status workflow, and audit trail
+- Afternoon: Capture feedback, implement the three highest-priority fixes
+- End of day: Refined prototype with documented feedback log and updated implementation roadmap
+- Validation gate: BSA Officer identifies at least one manual process the platform eliminates or reduces
+
+#### Benefits of the Sprint Approach
+
+1. **Rapid validation with real implementation**: Working code, not whiteboard diagrams, is the sprint artifact
+2. **Technical feasibility confirmed in 72 hours**: Any spec gaps or integration problems surface during the sprint, not six weeks later
+3. **Stakeholder alignment before full build**: MDI compliance officer feedback on Day 3 shapes the full implementation — before significant resources are committed
+4. **Agent boundaries tested under fire**: Real data reveals whether AGENT BOUNDARIES are calibrated correctly — too restrictive or not restrictive enough
+5. **Demo-ready for MDI sales**: A working prototype from Day 3 is a sales tool for the next MDI conversation
+
+#### Design Philosophy Principles
+
+Based on the success of the Budget Wizard implementation (98.6% test coverage via spec-driven development), all specifications include:
+
+1. ✅ **TypeScript type definitions** — Complete interfaces ready to implement
+2. ✅ **Database schemas** — PostgreSQL DDL with migrations
+3. ✅ **Test cases FIRST** — TDD approach with expected inputs/outputs
+4. ✅ **API contracts** — Function signatures, parameters, return types
+5. ✅ **Claude Agent SDK patterns** — Integration examples
+6. ✅ **Agent Boundaries** — Explicit limits on what each agent does NOT do (legal, regulatory, and safety guardrails)
+7. ✅ **Error handling** — Comprehensive failure scenarios
+8. ✅ **Performance benchmarks** — SLAs and metrics
 
 ---
 
@@ -34,7 +80,7 @@ Based on the success of the Budget Wizard implementation (which used test-first 
 - **Runtime**: Node.js 20+ with TypeScript 5.x
 - **AI Framework**: Claude Agent SDK (Anthropic)
 - **Database**: PostgreSQL 15+ with Row Level Security (RLS)
-- **File Storage**: Box FedRAMP High (secure document storage)
+- **File Storage**: AWS S3 (FedRAMP High, SSE-KMS, SOC 2, ISO 27001, PCI DSS)
 - **Message Queue**: Redis for agent handoffs
 - **Infrastructure**: AWS (ECS Fargate, RDS, ElastiCache)
 
@@ -42,7 +88,7 @@ Based on the success of the Budget Wizard implementation (which used test-first 
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                    BOX FEDRAM HIGH STORAGE                        │
+│                    AWS S3 (FEDRAMP HIGH AUTHORIZED)               │
 │  - Raw banking documents (CSV, Excel, PDF)                       │
 │  - PII-containing data (NEVER sent to Claude)                    │
 │  - Audit trail (immutable append-only logs)                      │
@@ -53,43 +99,107 @@ Based on the success of the Budget Wizard implementation (which used test-first 
 │  - Extract structured data from banking documents                │
 │  - Strip ALL PII (SSN → SSN_HASH_xxx, Name → [PERSON_001])      │
 │  - Create anonymized tokens with secure mapping                  │
-│  - Store PII mapping in separate PostgreSQL vault               │
+│  - Store PII mapping in separate PostgreSQL vault                │
 └────────────────────┬─────────────────────────────────────────────┘
                      ↓
 ┌──────────────────────────────────────────────────────────────────┐
-│           CLAUDE API (Zero Data Retention - Bedrock)             │
+│               HTTP API LAYER  (spec: specs/api/)                  │
 │                                                                  │
-│  BSA/AML Module:                                                │
-│  - TransactionMonitor: Structuring/velocity detection          │
-│  - OFACScreener: Sanctions screening                           │
-│  - SARDrafter: Suspicious activity report generation           │
+│  POST /v1/transactions/screen    POST /v1/transactions/batch     │
+│  POST /v1/cra/validate           POST /v1/cra/batch              │
+│  POST /v1/fair-lending/analyze   GET  /v1/alerts                 │
 │                                                                  │
-│  CRA Module:                                                    │
-│  - DataGuard: Loan register validation                         │
-│  - LendScope: Geographic lending analysis                      │
-│  - ComplianceGen: FFIEC report generation                      │
+│  Middleware: Auth (JWT/HMAC) → Bank RLS → PII detector →         │
+│             Idempotency → Rate limiter → Audit log               │
 │                                                                  │
-│  Fair Lending Module:                                          │
-│  - LoanDataAnalyzer: 80% rule disparate impact testing        │
-│  - RedliningDetector: Geographic discrimination analysis       │
-│  - PricingAuditor: Interest rate disparity detection          │
-│                                                                  │
-│  File-Based Handoffs: agent_N_output.json → agent_N+1_input   │
-│  Human Approval Gates: Compliance officer review              │
-└────────────────────┬─────────────────────────────────────────────┘
-                     ↓
+│  Consumers:  Platform UI (internal)  |  ISV / bank developers    │
+│              ─────────────────────────────────────────────────   │
+│              Same endpoints. Same auth. Same audit trail.        │
+└────────┬───────────────────────────────────────┬─────────────────┘
+         ↓ (agent service calls)                 ↓ (external API)
+┌──────────────────────────┐          ┌──────────────────────────┐
+│  CLAUDE API (Bedrock)    │          │  Platform UI / ISV App   │
+│  Zero Data Retention     │          │  (thin client on top of  │
+│                          │          │   the same HTTP API)     │
+│  BSA/AML Module:         │          └──────────────────────────┘
+│  - TransactionMonitor    │
+│  - OFACScreener          │
+│  - SARDrafter            │
+│                          │
+│  CRA Module:             │
+│  - DataGuard             │
+│  - LendScope             │
+│  - ComplianceGen         │
+│                          │
+│  Fair Lending Module:    │
+│  - LoanDataAnalyzer      │
+│  - RedliningDetector     │
+│  - PricingAuditor        │
+└────────────┬─────────────┘
+             ↓
 ┌──────────────────────────────────────────────────────────────────┐
 │              POSTGRESQL DATABASE (RDS with RLS)                   │
-│  - Sanitized transaction data                                   │
-│  - Analysis results and flagged items                           │
-│  - Compliance reports and audit trail                           │
-│  - PII mapping vault (separate schema, restricted access)       │
+│  - Sanitized transaction data                                    │
+│  - Analysis results and flagged items                            │
+│  - Compliance reports and audit trail                            │
+│  - PII mapping vault (separate schema, restricted access)        │
 └──────────────────────────────────────────────────────────────────┘
 ```
+
+### API-First Architecture Principle
+
+Every agent is exposed through the HTTP API layer. The platform UI is a thin client that calls the same endpoints as external consumers — there are no internal shortcuts or direct service-layer calls from the UI. This means:
+
+- The external API product requires zero refactoring: it is the same API, already production-proven by the platform.
+- One sales motion lands an ISV partner; the same code serves both the platform and the ISV's embedded integration.
+- Bank-scoped RLS applies equally to platform UI calls and external API calls — no separate access control logic.
+
+See [`specs/api/API_LAYER_SPEC.md`](specs/api/API_LAYER_SPEC.md) for the full API specification including TypeScript interfaces, authentication, rate limits, idempotency, audit trail, and test cases.
+
+### Sequential Pipeline Architecture
+
+Two explicit sequential pipelines govern agent execution order. An upstream failure halts the downstream agent rather than passing bad data forward.
+
+**CRA Documentation Pipeline** (process: sequential)
+
+```
+DataGuard → NarrativeWriter
+```
+
+DataGuard validates loan register data and resolves census tract codes. NarrativeWriter consumes `DataGuardOutput.validated_records`. If `DataGuardOutput.summary.critical_errors > 0`, NarrativeWriter does not run — critical data errors block narrative generation until resolved.
+
+**LIHTC/NMTC to CRA Pipeline** (process: sequential, event-driven)
+
+```
+ComplianceMonitor → NarrativeWriter (Investment Test input)
+```
+
+ComplianceMonitor maintains the LIHTC/NMTC portfolio status. Qualifying investments with `status !== 'recaptured'` are passed to NarrativeWriter as `community_development_investments` for the CRA Investment Test section. The daily ComplianceMonitor scan runs before any on-demand NarrativeWriter generation to ensure investment status is current.
+
+**BSA/AML and Fair Lending pipelines** run independently — no cross-module sequential dependency.
 
 ---
 
 ## Module Specifications
+
+### 0. HTTP API Layer
+
+**Purpose**: Clean HTTP API wrapping all compliance agents. The platform UI and external ISV/bank developers use identical endpoints. API-first as architecture, platform-first as go-to-market.
+
+**Specification**: [`specs/api/API_LAYER_SPEC.md`](specs/api/API_LAYER_SPEC.md)
+
+**Key Features**:
+
+- JWT and HMAC-signed API key authentication, bank-scoped by default
+- PII detection at the API boundary (defense in depth — backstop behind Orchestrator)
+- Idempotency keys on all POST operations (prevents duplicate SAR submissions)
+- Async job pattern for batch operations with webhook callbacks
+- Immutable `api_audit_log` table (append-only, RLS-enforced)
+- Versioned from day one (`/v1/`), 12-month deprecation policy
+
+**Implementation repo**: `econofi-agents-api`
+
+---
 
 ### 1. BSA/AML TransactionMonitor
 
@@ -100,6 +210,7 @@ Based on the success of the Budget Wizard implementation (which used test-first 
 **Specification**: [`specs/bsa-aml/TRANSACTION_MONITOR_SPEC.md`](specs/bsa-aml/TRANSACTION_MONITOR_SPEC.md)
 
 **Key Features**:
+
 - Structuring detection (deposits <$10K to evade CTR reporting)
 - Velocity anomaly detection (dormant accounts suddenly active)
 - Round-dollar pattern analysis (exact amounts vs. normal business)
@@ -119,6 +230,7 @@ Based on the success of the Budget Wizard implementation (which used test-first 
 **Specification**: [`specs/cra/DATA_GUARD_SPEC.md`](specs/cra/DATA_GUARD_SPEC.md)
 
 **Key Features**:
+
 - Schema validation (required fields per CRA regulation)
 - Census tract code verification (FFIEC geocoding API)
 - Data quality checks (missing values, invalid ranges)
@@ -138,6 +250,7 @@ Based on the success of the Budget Wizard implementation (which used test-first 
 **Specification**: [`specs/fair-lending/LOAN_DATA_ANALYZER_SPEC.md`](specs/fair-lending/LOAN_DATA_ANALYZER_SPEC.md)
 
 **Key Features**:
+
 - 80% rule calculation (protected class approval rate / comparison group)
 - Regression analysis controlling for FICO, DTI, LTV
 - Matched-pair testing (similar credit profiles, different outcomes)
@@ -148,38 +261,102 @@ Based on the success of the Budget Wizard implementation (which used test-first 
 
 ---
 
+### 4. CRA NarrativeWriter
+
+**Purpose**: Auto-generates CRA performance narratives and assembles examiner-ready public file documentation for MDIs and community banks
+
+**Regulatory Basis**: 12 CFR §228 Subpart B (CRA Performance Evaluation), 12 CFR §228.43 (CRA Public File)
+
+**Specification**: [`specs/cra/CRA_NARRATIVE_AGENT_SPEC.md`](specs/cra/CRA_NARRATIVE_AGENT_SPEC.md)
+
+**Key Features**:
+
+- Generates complete CRA performance narratives covering Lending, Investment, and Service tests
+- Maps community development lending, investment, and service activity against CRA assessment areas by census tract
+- Produces required CRA public file components per 12 CFR §228.43 (assessment area list, CD loan list, annual activity report)
+- Generates anticipated examiner Q&A with data-backed responses
+- Supports Large Bank and Intermediate Small Bank evaluation frameworks
+- Downstream consumer of DataGuard validated loan records
+
+**Econofi differentiation**: Community development activity from Econofi financial literacy platform qualifies as CRA Community Development Services — documentation is generated directly from platform activity, not imported from a separate system.
+
+**Target buyer**: Chief Compliance Officer, Community Development Officer, CEO at MDIs with $200M-$1B in assets
+
+**Performance SLA**: <30 seconds for complete annual CRA narrative, 100% regulatory citation accuracy
+
+---
+
+### 5. LIHTC/NMTC ComplianceMonitor
+
+**Purpose**: Tracks LIHTC and NMTC investor compliance covenants across the full statutory holding periods — 15 years for LIHTC, 7 years for NMTC
+
+**Regulatory Basis**: IRC §42 (LIHTC), IRC §45D (NMTC), 26 CFR §1.42-5 (LIHTC Monitoring), 26 CFR §1.45D-1 (NMTC)
+
+**Specification**: [`specs/lihtc-nmtc/COMPLIANCE_MONITOR_SPEC.md`](specs/lihtc-nmtc/COMPLIANCE_MONITOR_SPEC.md)
+
+**Key Features**:
+
+- Real-time covenant schedule for all active LIHTC/NMTC investments
+- Proactive deadline alerts at 90/60/30/7 days before due date
+- Draft compliance certifications (LIHTC annual owner certifications, NMTC substantially-all test)
+- Recapture risk scoring with dollar exposure calculation (risk declines over 7-year NMTC period)
+- Portfolio dashboard showing aggregate covenant health and recapture exposure
+- Daily scheduled scan with webhook notifications to compliance officers
+- Integration with CRA NarrativeWriter — qualifying investments feed directly into CRA narrative
+
+**Market context**: LIHTC and NMTC were made permanent July 4, 2025. CRA-motivated institutions provide >80% of LIHTC and NMTC equity investment, creating a growing multi-year compliance obligation for every MDI and CDFI that participates in tax credit deals.
+
+**Target buyer**: Community development officers, compliance officers, and operations teams at CDFIs and MDIs that actively participate in LIHTC and NMTC deals
+
+**Performance SLA**: <2 seconds for single investment status check, <10 seconds for full portfolio scan, 0% deadline miss rate
+
+---
+
 ## Development Workflow
 
-### Phase 1: Specification Review (Current)
+### Specification Status
 
-- ✅ Review and validate technical specifications
-- ✅ Ensure completeness of type definitions and test cases
-- ✅ Validate regulatory compliance requirements
-- ✅ Approve database schema designs
+All five agent specifications are complete and implementation-ready:
 
-### Phase 2: Test-First Implementation
+- ✅ TypeScript type definitions, database schemas, TDD test cases, API contracts, Agent Boundaries
+- ✅ Sequential pipeline dependencies documented (DataGuard → NarrativeWriter, ComplianceMonitor → NarrativeWriter)
+- ✅ Claude Agent SDK configurations with system prompts, tools, and model selections
+- ✅ Agent Boundaries established for all five agents (no autonomous regulatory determinations)
 
-1. **Write Tests First** (TDD approach)
-   - Unit tests for each agent function
-   - Integration tests for agent handoffs
-   - End-to-end workflow tests
+### 8-Week Post-Sprint Implementation Roadmap
 
-2. **Implement to Pass Tests**
-   - TypeScript implementation matching specs
-   - Claude Agent SDK integration
-   - Database migrations
+The 3-Day Implementation Sprint (see Design Philosophy above) produces the working prototype. This roadmap governs the full build after the sprint concludes.
 
-3. **Refactor for Quality**
-   - Code review against spec
-   - Performance optimization
-   - Security hardening
+#### Weeks 1–2: BSA/AML Full Build + CRA Pipeline
 
-### Phase 3: Deployment
+- BSA/AML TransactionMonitor: all 8 detection patterns complete; batch endpoint live (50K transactions async)
+- CRA DataGuard + NarrativeWriter sequential pipeline end-to-end; CRA framework feature flag implemented (`1995_legacy` | `2023_modern`)
+- Bank-scoped RLS enforced across all agents
+- Target: all TransactionMonitor and DataGuard unit tests green; alert pipeline runs on real anonymized transaction data
 
-- Docker containerization
-- AWS infrastructure as code (CDK)
-- CI/CD pipeline setup
-- Production monitoring and alerting
+#### Weeks 3–4: HTTP API Layer — Full Build
+
+- Complete remaining 13 post-sprint endpoints (batch transaction screening, CRA batch, Fair Lending analysis, LIHTC/NMTC certifications)
+- JWT and HMAC authentication with bank isolation
+- Async job pattern for batch operations with webhook callbacks
+- Idempotency keys on all POST operations
+- OpenAPI 3.1 spec (`openapi/v1.yaml`) and Postman collection generated
+- Target: all 18 endpoints documented and passing integration tests
+
+#### Weeks 5–6: Fair Lending + ComplianceMonitor + Security
+
+- Fair Lending LoanDataAnalyzer: disparate impact, regression, matched-pair analysis
+- LIHTC/NMTC ComplianceMonitor: daily scheduled scan, 90/60/30/7-day alerts, draft certifications
+- SOC 2 Type II controls documented; PII vault separation verified; AGENT BOUNDARIES stress-tested
+- Target: security review sign-off; all five agents passing full unit test suites
+
+#### Weeks 7–8: Pilot Preparation + BSA Officer Demo
+
+- Deploy to staging with first MDI pilot bank's transaction data (anonymized)
+- Run TransactionMonitor on pilot bank's last 90 days of transactions — present alert report to BSA Officer
+- Begin CRA narrative pilot if bank has upcoming exam cycle
+- Refine based on BSA Officer feedback from Day 3 sprint demo
+- Target: pilot bank BSA Officer signs off on alert report; LOI or pilot agreement initiated
 
 ---
 
@@ -213,9 +390,9 @@ Based on the success of the Budget Wizard implementation (which used test-first 
    ALTER TABLE pii_vault.token_mapping ENABLE ROW LEVEL SECURITY;
    ```
 
-3. **Box FedRAMP High Storage**:
-   - Raw documents NEVER leave Box
-   - Signed URLs for temporary access
+3. **AWS S3 FedRAMP High Storage**:
+   - Raw documents NEVER leave S3
+   - Pre-signed URLs for temporary access
    - Immutable audit logs
 
 ### Regulatory Compliance
@@ -255,7 +432,7 @@ Based on the success of the Budget Wizard implementation (which used test-first 
 |-----------|--------------|-------------|
 | Claude API (1M tokens/month) | $100 | $1,200 |
 | PostgreSQL RDS (db.t3.medium) | $73 | $876 |
-| Box Storage (500 GB) | $75 | $900 |
+| AWS S3 (500 GB) | $75 | $900 |
 | Redis ElastiCache (cache.t3.micro) | $13 | $156 |
 | ECS Fargate (2 vCPU, 4 GB) | $60 | $720 |
 | **Total Infrastructure** | **$321** | **$3,852** |
@@ -304,4 +481,4 @@ Proprietary - Econofi Financial Technologies
 
 ---
 
-*Last Updated: February 15, 2026*
+Last Updated: March 2026

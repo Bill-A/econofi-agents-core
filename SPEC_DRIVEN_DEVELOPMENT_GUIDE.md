@@ -761,13 +761,13 @@ project-name/
 **Example**:
 ```bash
 # Copy types
-cp ../econofi-agents-v2/specs/bsa-aml/types.ts src/types/bsa-aml.types.ts
+cp ../econofi-agents-core/specs/bsa-aml/types.ts src/types/bsa-aml.types.ts
 
 # Copy schema
-cp ../econofi-agents-v2/specs/bsa-aml/schema.sql migrations/001_create_bsa_aml_schema.sql
+cp ../econofi-agents-core/specs/bsa-aml/schema.sql migrations/001_create_bsa_aml_schema.sql
 
 # Copy tests
-cp ../econofi-agents-v2/specs/bsa-aml/tests.spec.ts tests/unit/transaction-monitor.test.ts
+cp ../econofi-agents-core/specs/bsa-aml/tests.spec.ts tests/unit/transaction-monitor.test.ts
 ```
 
 #### Step 3: Run Tests - RED Phase (Day 1)
