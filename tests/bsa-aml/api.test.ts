@@ -492,5 +492,125 @@ describe('BSA/AML API Routes', () => {
       };
       expect(body.data.investigation_status).toBe('sar_filed');
     });
+
+    // -----------------------------------------------------------------------
+    // Item 1 — "Don't file" closure reason (RED until implemented)
+    // -----------------------------------------------------------------------
+
+    it('returns 400 when no_sar_warranted is set without closure_reason_code', async () => {
+      mockState.alertRowForPatch = mockAlertRow;
+
+      const res = await server.inject({
+        method: 'PATCH',
+        url: '/v1/alerts/ALT-2026-05-06-00001',
+        headers: { authorization: `Bearer ${validToken}` },
+        payload: {
+          status: 'no_sar_warranted',
+          investigation_notes: 'Looked OK.',
+        },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.body) as { error: { code: string } };
+      expect(body.error.code).toBe('INVALID_REQUEST');
+    });
+
+    it('returns 400 when false_positive is set without closure_reason_code', async () => {
+      mockState.alertRowForPatch = mockAlertRow;
+
+      const res = await server.inject({
+        method: 'PATCH',
+        url: '/v1/alerts/ALT-2026-05-06-00001',
+        headers: { authorization: `Bearer ${validToken}` },
+        payload: {
+          status: 'false_positive',
+        },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.body) as { error: { code: string } };
+      expect(body.error.code).toBe('INVALID_REQUEST');
+    });
+
+    it('returns 400 for an invalid closure_reason_code value', async () => {
+      mockState.alertRowForPatch = mockAlertRow;
+
+      const res = await server.inject({
+        method: 'PATCH',
+        url: '/v1/alerts/ALT-2026-05-06-00001',
+        headers: { authorization: `Bearer ${validToken}` },
+        payload: {
+          status: 'no_sar_warranted',
+          closure_reason_code: 'not_a_valid_reason',
+        },
+      });
+
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.body) as { error: { code: string } };
+      expect(body.error.code).toBe('INVALID_REQUEST');
+    });
+
+    it('returns 200 for no_sar_warranted with a valid closure_reason_code', async () => {
+      mockState.alertRowForPatch = mockAlertRow;
+
+      const res = await server.inject({
+        method: 'PATCH',
+        url: '/v1/alerts/ALT-2026-05-06-00001',
+        headers: { authorization: `Bearer ${validToken}` },
+        payload: {
+          status: 'no_sar_warranted',
+          closure_reason_code: 'tanda_cycle',
+          investigation_notes: 'Customer participates in a documented tanda rotation.',
+        },
+      });
+
+      expect(res.statusCode).toBe(200);
+      const body = JSON.parse(res.body) as {
+        data: { investigation_status: string; closure_reason_code: string };
+      };
+      expect(body.data.investigation_status).toBe('no_sar_warranted');
+      expect(body.data.closure_reason_code).toBe('tanda_cycle');
+    });
+
+    it('returns 200 for false_positive with a valid closure_reason_code', async () => {
+      mockState.alertRowForPatch = mockAlertRow;
+
+      const res = await server.inject({
+        method: 'PATCH',
+        url: '/v1/alerts/ALT-2026-05-06-00001',
+        headers: { authorization: `Bearer ${validToken}` },
+        payload: {
+          status: 'false_positive',
+          closure_reason_code: 'system_false_positive',
+          investigation_notes: 'Pattern matched tanda, not structuring.',
+        },
+      });
+
+      expect(res.statusCode).toBe(200);
+      const body = JSON.parse(res.body) as {
+        data: { investigation_status: string };
+      };
+      expect(body.data.investigation_status).toBe('false_positive');
+    });
+
+    it('response includes closure_reason_code in data when provided', async () => {
+      mockState.alertRowForPatch = mockAlertRow;
+
+      const res = await server.inject({
+        method: 'PATCH',
+        url: '/v1/alerts/ALT-2026-05-06-00001',
+        headers: { authorization: `Bearer ${validToken}` },
+        payload: {
+          status: 'no_sar_warranted',
+          closure_reason_code: 'prior_cdd_review',
+        },
+      });
+
+      expect(res.statusCode).toBe(200);
+      const body = JSON.parse(res.body) as {
+        data: { closure_reason_code: string };
+      };
+      expect(body.data.closure_reason_code).toBe('prior_cdd_review');
+    });
   });
 });

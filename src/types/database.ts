@@ -140,9 +140,25 @@ export interface BsaAmlAlert {
   investigation_status: InvestigationStatus;
   investigation_notes: string | null;
   investigation_completed_at: string | null;
+  closure_reason_code: string | null;
+  closure_reason_detail: string | null;
 }
 
 export type BsaAmlAlertInsert = Omit<BsaAmlAlert, 'id' | 'created_at'>;
+
+export interface BsaAmlAlertEvent {
+  id: string;
+  alert_id: string;
+  event_type: string;
+  from_status: string | null;
+  to_status: string;
+  notes: string | null;
+  closure_reason_code: string | null;
+  actor: string | null;
+  created_at: string;
+}
+
+export type BsaAmlAlertEventInsert = Omit<BsaAmlAlertEvent, 'id' | 'created_at'>;
 
 export interface BsaAmlAuditLog {
   id: string;

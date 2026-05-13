@@ -15,6 +15,7 @@ import { craNarrativeRoutes } from './routes/cra/narrative';
 import { craChatRoutes } from './routes/cra/chat';
 import { bsaTransactionRoutes } from './routes/bsa-aml/transactions';
 import { bsaAlertRoutes } from './routes/bsa-aml/alerts';
+import { bsaBatchRoutes } from './routes/bsa-aml/batch';
 
 export async function buildServer(): Promise<FastifyInstance> {
   const server = Fastify({ logger: false }); // We use pino directly
@@ -27,6 +28,7 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   // Register all agent routes
   await server.register(bsaTransactionRoutes);
+  await server.register(bsaBatchRoutes);
   await server.register(bsaAlertRoutes);
   await server.register(craValidateRoutes);
   await server.register(craNarrativeRoutes);

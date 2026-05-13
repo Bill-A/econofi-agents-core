@@ -302,24 +302,32 @@ function detectSingleTransactionThresholdProximity(
   const proximate = transactions.filter(tx =>
     !alreadyClustered.has(tx.transaction_id) &&
     (tx.transaction_type === 'cash_deposit' || tx.transaction_type === 'cash_withdrawal') &&
-    tx.amount < thresholdUsd &&
+    tx.amount <= thresholdUsd &&
     tx.amount >= thresholdUsd * 0.99
   );
 
   for (const tx of proximate) {
+    const atThreshold = tx.amount === thresholdUsd;
     alerts.push({
       alert_type: 'structuring',
       severity: 'high',
-      risk_score: 82,
+      risk_score: atThreshold ? 85 : 82,
       transactions_flagged: [tx],
-      suspicious_indicators: [
-        `Single cash transaction of $${tx.amount.toFixed(2)} is within 1% of the $${thresholdUsd.toLocaleString()} CTR reporting threshold`,
-        `Amount proximity to $${thresholdUsd.toLocaleString()} threshold suggests possible avoidance of Currency Transaction Report`,
-      ],
-      regulatory_citation: '31 USC §5324 — Structuring transactions to evade reporting requirements',
+      suspicious_indicators: atThreshold
+        ? [
+            `Cash transaction of exactly $${tx.amount.toLocaleString()} equals the CTR reporting threshold — a Currency Transaction Report is required`,
+            `Exact-threshold cash amount warrants review; verify source of funds and business purpose`,
+          ]
+        : [
+            `Single cash transaction of $${tx.amount.toFixed(2)} is within 1% of the $${thresholdUsd.toLocaleString()} CTR reporting threshold`,
+            `Amount proximity to $${thresholdUsd.toLocaleString()} threshold suggests possible avoidance of Currency Transaction Report`,
+          ],
+      regulatory_citation: atThreshold
+        ? '31 USC §5313 — Currency Transaction Report required for cash transactions at or above $10,000'
+        : '31 USC §5324 — Structuring transactions to evade reporting requirements',
       recommended_action: 'investigate',
-      confidence_score: 78,
-      false_positive_probability: 0.22,
+      confidence_score: atThreshold ? 82 : 78,
+      false_positive_probability: atThreshold ? 0.18 : 0.22,
     });
   }
 

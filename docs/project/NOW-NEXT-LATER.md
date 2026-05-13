@@ -3,16 +3,18 @@
 **Project**: Econofi Compliance Agents — MDI/CDFI Bank Compliance Automation
 **Repository**: `econofi-agents-core` (API + agents), `econofi-agents-ui` (demo UI)
 **Methodology**: Spec-Driven Development + 3-Day Implementation Sprint
-**Overall Status**: Day 1–3 Sprint Complete — Demo UI Ready — May 11 Demo Confirmed
+**Overall Status**: Day 1–3 Sprint Complete — CEO Demo Complete — Post-Demo Sprint: Items 1–3 In Queue
 **First Deliverable**: BSA/AML TransactionMonitor — regulation-stable, $59B industry spend, every bank, no framework uncertainty
 
-*Last updated: May 6, 2026 — 3-day sprint complete; May 11 demo with Demetra confirmed*
+*Last updated: May 12, 2026 — CEO demo complete; outcome = deepen product for pilot with real BSA Officer as Product Owner; Items 1–3 tests written (RED), implementation next*
 
 ---
 
 ## Summary
 
 Six technical specifications are complete; a seventh (RegulatoryWatcher) is in progress. The 3-Day Implementation Sprint is complete for BSA/AML. BSA/AML agent, API routes, and demo UI are all implemented and test-green. CRA DataGuard is scaffolded and ready for implementation.
+
+**Post-demo outcome (May 2026)**: CEO demo confirmed BSA/AML as the lead product. Next phase deepens the product for a pilot with a real BSA Officer as Product Owner. Three items were prioritized (see HANDOFF.md and Post-Demo Sprint section below). Tests for all three items are already written and RED — implementation is next.
 
 **First deliverable rationale**: BSA/AML is the highest-spend compliance burden ($59B/year), every bank has a BSA Officer with a budget, and the regulatory framework is stable. CRA module development continues in parallel but BSA/AML leads the sprint and the sales conversation.
 
@@ -39,9 +41,9 @@ The MDI executive sales pitch — mission alignment, CRA Community Development T
 
 ---
 
-## NOW — Sprint Complete + Demo
+## COMPLETED — 3-Day Sprint + Demo UI
 
-*Status updated May 6, 2026 — sprint days 1–3 complete; demo UI shipped.*
+*Closed May 12, 2026 — sprint days 1–3 complete; CEO demo done.*
 
 ### Repository Scaffold
 
@@ -126,10 +128,11 @@ The MDI executive sales pitch — mission alignment, CRA Community Development T
 
 #### Screens built
 
-- [x] **Transaction Screener** (`/screen`) — Server Action, pre-populated structuring scenario (amount=$9,800, cash deposit, [PERSON_001]), 10/10 tests GREEN
+- [x] **About / Demo Guide** (`/about`) — static Server Component; platform pitch, 3-step workflow cards, pre-seeded scenario cards; collapsible 5-minute Demo Guide for BSA Officer walkthrough
+- [x] **Transaction Screener** (`/screen`) — Server Action, pre-populated structuring scenario (amount=$9,200, cash deposit, [PERSON_001]), 10/10 tests GREEN
 - [x] **Alert Dashboard** (`/alerts`) — Server Component, paginated list, severity + status filters, risk score bars, "Investigate" link per row
-- [x] **Alert Detail** (`/alerts/:alert_id`) — Server Component, investigation form, SAR reference field conditional on `sar_filed` status, status update via Server Action
-- [x] **Demo seed script** — `npm run seed:demo` from `econofi-agents-core` — inserts 3 pre-built alerts (structuring HIGH, velocity CRITICAL, geographic MEDIUM); idempotent, re-runnable
+- [x] **Alert Detail** (`/alerts/:alert_id`) — Server Component; investigation form, SAR reference field; SAR narrative panel with Bank/CU toggle and Word doc download; status update via Server Action
+- [x] **Demo seed script** — `npm run seed:demo` from `econofi-agents-core` — inserts **4** pre-built alerts (structuring HIGH, velocity CRITICAL, geographic MEDIUM, round-dollar HIGH); idempotent, re-runnable; structuring amounts corrected to match TransactionMonitor ($9,200 / $9,400 / $9,150)
 
 #### Demo readiness checklist (complete before May 11)
 
@@ -151,6 +154,97 @@ npm run dev
 Verify before the call: `GET http://localhost:3001/v1/alerts` returns 3 seeded alerts, then walk all 3 screens end-to-end.
 
 **Day 3 Validation Gate**: BSA Officer identifies at least one manual process the platform eliminates — Sprint retrospective notes captured in `docs/SPRINT_RETROSPECTIVE.md`
+
+---
+
+## COMPLETED — Post-Demo Sprint: Items 1–3
+
+*Closed May 12, 2026 — all three items GREEN, 132/132 tests passing, migration applied to local DB.*
+
+### Item 1: "Don't File" Workflow — Structured Closure Reason ✓
+
+- [x] `migrations/005_bsa_aml_closure_and_events.sql` — `closure_reason_code` + `closure_reason_detail` on `bsa_aml.alerts`
+- [x] `alertRepository.ts` — `updateAlertStatus()` saves closure fields
+- [x] PATCH route Zod schema — `closure_reason_code` required for `no_sar_warranted` / `false_positive`; invalid code → 400
+- [x] `closure_reason_code` returned in PATCH response envelope
+- [x] 5 new tests GREEN (`tests/bsa-aml/api.test.ts`)
+
+### Item 2: Batch Transaction Intake ✓
+
+- [x] `src/routes/bsa-aml/batch.ts` — `POST /v1/transactions/batch`, max 500, PII-guarded
+- [x] Registered in `src/server.ts`
+- [x] 10 tests GREEN (`tests/bsa-aml/api-batch.test.ts`), 2000ms SLA confirmed
+
+### Item 3: Exam-Ready Audit Trail ✓
+
+- [x] `migrations/005_bsa_aml_closure_and_events.sql` — `bsa_aml.alert_events` table, append-only RLS
+- [x] `alertRepository.ts` — `logAlertEvent()` + `getAlertEvents()`; every `updateAlertStatus()` call writes an immutable event row
+- [x] `GET /v1/alerts/:alert_id/events` route registered
+- [x] 7 tests GREEN (`tests/bsa-aml/api-events.test.ts`)
+
+**Apply migration to local DB** (multi-statement files require Docker exec — `supabase db query -f` does not support them):
+```bash
+docker cp migrations/005_bsa_aml_closure_and_events.sql supabase_db_econofi-agents-core:/tmp/005.sql
+docker exec supabase_db_econofi-agents-core psql -U postgres -d postgres -f /tmp/005.sql
+```
+
+---
+
+## NOW — Frontend Sprint: Items 1–3 UI
+
+*Status: May 12, 2026 — backend complete; UI for the three new capabilities is next (econofi-agents-ui).*
+
+**TDD applies here too.** Every component starts with a failing test. No implementation before RED is confirmed.
+
+All three additions are in `econofi-agents-ui`. No backend changes required — APIs are fully wired.
+
+---
+
+### UI Item 1: "Close Without Filing" Panel
+
+**Where**: `app/alerts/[alert_id]/` — parallel to the existing SAR narrative panel.
+
+**Behaviour**: Appears when BSA Officer selects `no_sar_warranted` or `false_positive` in the status dropdown. Shows:
+- Closure reason dropdown (8 codes from the enum)
+- Optional detail text field
+- Submit calls `PATCH /v1/alerts/:id` with `closure_reason_code`
+
+- [ ] Write failing component test first
+- [ ] Build `ClosureReasonPanel` component
+- [ ] Wire into alert detail page alongside SAR narrative panel
+- [ ] Update TypeScript types to include `closure_reason_code` on the alert response
+
+**Validation Gate**: Selecting `no_sar_warranted` without a closure reason is blocked in the UI. Submitting with a valid reason → alert status updates → panel disappears.
+
+---
+
+### UI Item 2: Batch Upload Page
+
+**Where**: New page at `app/screen/batch/` (or `/screen` tab toggle).
+
+**Behaviour**: Accepts JSON paste or CSV upload of transactions (max 500). Submits to `POST /v1/transactions/batch`. Shows results: X submitted, Y alerts created, links to new alerts in dashboard.
+
+- [ ] Write failing page test first
+- [ ] Build batch input form (JSON textarea + submit)
+- [ ] Display results summary with alert links
+- [ ] Handle PII_DETECTED 422 with clear error message
+
+**Validation Gate**: Submitting 3 structuring transactions → results show 1 alert created → link navigates to the new alert in the dashboard.
+
+---
+
+### UI Item 3: Audit Trail Timeline
+
+**Where**: `app/alerts/[alert_id]/` — below the investigation form.
+
+**Behaviour**: Fetches `GET /v1/alerts/:id/events` on page load. Renders events chronologically: status label, timestamp, closure reason code (if present), notes excerpt.
+
+- [ ] Write failing component test first
+- [ ] Build `AuditTrail` component
+- [ ] Wire into alert detail page
+- [ ] Empty state: "No events recorded yet"
+
+**Validation Gate**: Alert with two status changes shows two timeline entries in chronological order. Closure reason displays human-readable label (e.g. "Tanda / rotating savings"), not raw code.
 
 ---
 
@@ -182,11 +276,18 @@ The Alert Dashboard (`econofi-agents-ui` + `econofi-agents-core`) requires three
 #### 3. Database — Switch local Supabase → cloud Supabase project
 
 - [ ] Log in to supabase.com — the cloud project already exists (`ljhqickbsxxwmpsrvnpl`)
-- [ ] Run migration `001_create_bsa_aml_schema.sql` against the cloud project (Supabase Studio SQL editor or `supabase db push --linked`)
+- [ ] Run migrations `001` through `005` against the cloud project in order (Supabase Studio SQL editor — use `docker cp` + `psql` pattern for multi-statement files, same as local)
 - [ ] Grant schema permissions: `GRANT USAGE ON SCHEMA bsa_aml TO service_role; GRANT ALL ON ALL TABLES IN SCHEMA bsa_aml TO service_role;`
 - [ ] Create `public.set_app_context(bank_id_value text)` wrapper function in cloud Studio (same SQL used locally)
 - [ ] Re-run `npx ts-node scripts/seed-demo.ts` with `SUPABASE_URL` pointing to cloud project — seeds 4 demo alerts
-- [ ] Confirm RLS is enabled on `bsa_aml.alerts` in the cloud project
+- [ ] Confirm RLS is enabled on `bsa_aml.alerts` and `bsa_aml.alert_events` in the cloud project
+- [ ] **Enable RLS on `public.bank_customer_mapping`** — this table scopes all alert queries to a specific bank; without RLS any authenticated user can read every bank's data. Run in cloud Studio SQL editor:
+  ```sql
+  ALTER TABLE public.bank_customer_mapping ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY bank_mapping_isolation ON public.bank_customer_mapping
+    USING (bank_id = current_setting('app.current_bank_id')::UUID);
+  ```
+  Do NOT apply locally before this migration — it will break the seed script and API unless `SET app.current_bank_id` context is confirmed in place for every query path.
 
 #### 4. Wire and verify
 
@@ -272,7 +373,7 @@ Complete remaining 12 post-sprint endpoints:
 
 ## Demo Readiness
 
-**Status: READY — CEO demo rescheduled to May 13, 2026**
+**Status: COMPLETE — CEO demo done; post-demo sprint (Items 1–3) is active NOW work**
 
 TransactionMonitor deployed at `https://econofi-demo.netlify.app` — no local setup required.
 
@@ -339,3 +440,7 @@ Structuring alert amounts corrected to match TransactionMonitor: $9,200 / $9,400
 | May 2026 | Demo UI triggered — confirmed meeting with Demetra (May 11) | Named compliance officer at target institution confirmed; NNL trigger condition met |
 | May 2026 | Demo UI scoped to 3 screens; no Demo Setup in nav | Demo Setup is a pre-meeting operator task (seed script), not a BSA Officer workflow; showing it in nav is unprofessional in a compliance context |
 | May 2026 | `bank_id` changed to UUID format in demo JWT | `bank_customer_mapping.bank_id` column is `UUID NOT NULL`; RLS policy casts to `::UUID`; non-UUID string would error at query time |
+| May 2026 | Post-demo sprint scoped to Items 1–3 before any new module work | CEO demo confirmed BSA/AML as lead product; deepening for pilot takes priority over CRA DataGuard or new module starts |
+| May 2026 | Closure reason codes are structured enum, not free text | FinCEN examiners review SAR declination decisions; structured codes make audit trails machine-readable and exam-defensible |
+| May 2026 | Batch intake capped at 500 transactions per call | Keeps synchronous SLA manageable; async batch endpoint (POST /v1/transactions/batch with job_id polling) planned for Weeks 3–4 for 50K+ loads |
+| May 2026 | Tests written RED before implementation begins (enforced) | All three post-demo test files exist and fail before any implementation file is touched; this is the non-negotiable TDD gate for every coding task in this repo |

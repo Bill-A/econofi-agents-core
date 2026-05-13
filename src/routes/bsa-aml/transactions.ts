@@ -27,7 +27,7 @@ import type { TransactionMonitorConfig } from '../../types/bsa-aml';
 // Request schema
 // ---------------------------------------------------------------------------
 
-const SanitizedTransactionSchema = z.object({
+export const SanitizedTransactionSchema = z.object({
   transaction_id: z.string().min(1),
   account_hash: z.string().min(1),
   customer_token: z.string().min(1),

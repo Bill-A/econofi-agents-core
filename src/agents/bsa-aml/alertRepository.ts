@@ -11,7 +11,7 @@
 import { getServiceClient, setBankContext } from '../../lib/supabase';
 import { DatabaseError } from '../../types/bsa-aml';
 import type { SuspiciousActivityAlert } from '../../types/bsa-aml';
-import type { BsaAmlAlert, InvestigationStatus } from '../../types/database';
+import type { BsaAmlAlert, BsaAmlAlertEvent, InvestigationStatus } from '../../types/database';
 
 export interface ListAlertsFilters {
   readonly severity?: string;
@@ -27,8 +27,11 @@ export interface ListAlertsPagination {
 
 export interface AlertStatusUpdate {
   readonly status: InvestigationStatus;
+  readonly from_status?: string;
   readonly investigation_notes?: string;
   readonly sar_reference_number?: string;
+  readonly closure_reason_code?: string;
+  readonly closure_reason_detail?: string;
 }
 
 export class AlertRepository {
@@ -146,18 +149,83 @@ export class AlertRepository {
     const completedStatuses: InvestigationStatus[] = ['sar_filed', 'no_sar_warranted', 'false_positive'];
     const isCompleted = completedStatuses.includes(update.status);
 
+    const updatePayload: Record<string, unknown> = {
+      investigation_status: update.status,
+      investigation_notes: update.investigation_notes ?? null,
+      investigation_completed_at: isCompleted ? new Date().toISOString() : null,
+    };
+
+    if (update.closure_reason_code !== undefined) {
+      updatePayload['closure_reason_code'] = update.closure_reason_code;
+    }
+    if (update.closure_reason_detail !== undefined) {
+      updatePayload['closure_reason_detail'] = update.closure_reason_detail;
+    }
+
     const { error } = await supabase
       .schema('bsa_aml')
       .from('alerts')
-      .update({
-        investigation_status: update.status,
-        investigation_notes: update.investigation_notes ?? null,
-        investigation_completed_at: isCompleted ? new Date().toISOString() : null,
-      })
+      .update(updatePayload)
       .eq('alert_id', alertId);
 
     if (error !== null) {
       throw new DatabaseError(`Failed to update alert ${alertId}: ${error.message}`);
     }
+
+    await this.logAlertEvent({
+      alert_id: alertId,
+      from_status: update.from_status ?? null,
+      to_status: update.status,
+      notes: update.investigation_notes,
+      closure_reason_code: update.closure_reason_code,
+      bankId,
+    });
+  }
+
+  async logAlertEvent(params: {
+    alert_id: string;
+    from_status: string | null;
+    to_status: string;
+    notes?: string;
+    closure_reason_code?: string;
+    actor?: string;
+    bankId: string;
+  }): Promise<void> {
+    const supabase = getServiceClient();
+    await setBankContext(supabase, params.bankId);
+
+    const { error } = await supabase
+      .schema('bsa_aml')
+      .from('alert_events')
+      .insert({
+        alert_id: params.alert_id,
+        event_type: 'status_change',
+        from_status: params.from_status,
+        to_status: params.to_status,
+        notes: params.notes ?? null,
+        closure_reason_code: params.closure_reason_code ?? null,
+        actor: params.actor ?? null,
+      });
+
+    if (error !== null) {
+      throw new DatabaseError(`Failed to log event for alert ${params.alert_id}: ${error.message}`);
+    }
+  }
+
+  async getAlertEvents(alertId: string): Promise<BsaAmlAlertEvent[]> {
+    const supabase = getServiceClient();
+
+    const { data, error } = await supabase
+      .schema('bsa_aml')
+      .from('alert_events')
+      .select('*')
+      .eq('alert_id', alertId)
+      .order('created_at', { ascending: true });
+
+    if (error !== null) {
+      throw new DatabaseError(`Failed to fetch events for alert ${alertId}: ${error.message}`);
+    }
+
+    return (data as BsaAmlAlertEvent[]) ?? [];
   }
 }
