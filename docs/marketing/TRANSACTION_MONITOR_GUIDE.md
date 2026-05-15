@@ -62,7 +62,7 @@ When you close an alert with one of these codes, the decision is recorded in an 
 
 ## The Dashboard
 
-`[SCREENSHOT: Alert dashboard — KPI cards at top, full list view with severity badges, risk score bars, age column, status filters]`
+`[SCREENSHOT: screenshot-01-dashboard-kpi-and-alert-list.png — KPI cards at top, full list view with severity badges, risk score bars, age column, status filters]`
 
 The Alert Dashboard is your BSA compliance queue. Four KPI cards at the top give you the operational picture before you read a single row:
 
@@ -97,13 +97,13 @@ Try it: [econofi-bsa-dashboard.netlify.app](https://econofi-bsa-dashboard.netlif
 
 Click any alert to open the detail view. The case file is organized into panels — each one answering a specific question a BSA Officer needs to resolve before making a filing decision.
 
-`[SCREENSHOT: Alert detail — structuring alert ALT-2026-05-11-00001, showing left panel with indicators, right panel with investigation form]`
+`[SCREENSHOT: screenshot-02-alert-detail-structuring-ALT-2026-05-11-00001.png — left panel with indicators and regulatory citation, right panel with investigation form]`
 
 **Suspicious indicators** — Plain-language description of why each pattern was flagged, with the specific regulatory basis.
 
 **Flagged Transactions Panel** — Every transaction that triggered the alert: amount, type (cash deposit / wire / ACH), date, and channel (branch or online). Total amount flagged is shown in the panel header.
 
-`[SCREENSHOT: Flagged transactions panel — table showing transaction ID, type, amount, date, channel, with total amount header]`
+`[SCREENSHOT: screenshot-03-flagged-transactions-panel.png — table showing transaction ID, type, amount, date, channel, with total amount header]`
 
 **Confidence score and false positive probability** — Transparency about certainty. A 91% confidence score on a structuring alert means something different than 64%.
 
@@ -111,7 +111,7 @@ Click any alert to open the detail view. The case file is organized into panels 
 
 ### Customer Identity
 
-`[SCREENSHOT: Customer identity panel — masked state showing [PERSON_001], with "Reveal Identity" button]`
+`[SCREENSHOT: screenshot-04-customer-identity-panel-masked.png — masked state showing [PERSON_001] token, with "Reveal Identity" button]`
 
 The customer identity panel is masked by default. Customer names, SSNs, dates of birth, and account numbers are never displayed automatically — they require an explicit reveal action by the BSA Officer.
 
@@ -121,7 +121,7 @@ This is not automatic. It is a deliberate, logged action — consistent with the
 
 ### Cross-Alert History
 
-`[SCREENSHOT: Customer alert history panel — list of prior alerts for same customer token, with type, severity, status, age]`
+`[SCREENSHOT: screenshot-05-customer-alert-history-panel.png — list of prior alerts for same customer token, with type, severity, status, age]`
 
 The cross-alert history panel shows every other alert linked to the same customer. You can see at a glance whether this is a first-time flag or a pattern of escalating activity — and click through to any prior alert directly.
 
@@ -129,7 +129,7 @@ This is one of the most exam-defensible features in the platform. An examiner wh
 
 ### Updating Status
 
-`[SCREENSHOT: Investigation form — status dropdown, notes field, SAR reference number field visible after SAR Filed selected]`
+`[SCREENSHOT: screenshot-06-investigation-form-sar-filed.png — status dropdown set to SAR Filed, notes field, SAR reference number field visible, confirm dialog]`
 
 The investigation form lets you:
 
@@ -160,7 +160,7 @@ When you close an alert as No SAR Warranted or False Positive, TransactionMonito
 2. Add a free-text explanation
 3. Confirm the status change
 
-`[SCREENSHOT: Closure reason panel — amber-styled, showing reason code dropdown and detail text field]`
+`[SCREENSHOT: screenshot-07-closure-reason-panel.png — amber-styled panel, reason code dropdown showing tanda-cycle selected, detail text field]`
 
 The result is a machine-readable, examiner-readable record that answers the question every BSA examiner asks: "How did you decide not to file?"
 
@@ -170,7 +170,7 @@ The result is a machine-readable, examiner-readable record that answers the ques
 
 When you set an alert to SAR Filed, a narrative draft appears automatically.
 
-`[SCREENSHOT: SAR narrative panel — showing draft text, Bank/Credit Union toggle, highlighted placeholder sections]`
+`[SCREENSHOT: screenshot-08-sar-narrative-panel.png — no tipping off header visible, filing deadline, Bank/Credit Union toggle, amber-highlighted placeholder sections]`
 
 The narrative draft is pre-populated with:
 - The subject description (using your tokenized customer reference — you will add the real name before filing)
@@ -191,7 +191,7 @@ This is a draft aid. Filing is solely your institution's responsibility. Econofi
 
 ## The Audit Trail
 
-`[SCREENSHOT: Audit trail timeline — showing three events: pending > in_progress (with notes) > sar_filed (with notes), timestamps and actor names]`
+`[SCREENSHOT: screenshot-09-audit-trail-timeline.png — three events: pending > in_progress (with notes) > sar_filed (with notes), timestamps and actor names visible]`
 
 Every alert carries a complete, immutable history of every status change:
 
