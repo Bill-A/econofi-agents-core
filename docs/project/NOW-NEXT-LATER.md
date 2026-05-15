@@ -3,10 +3,10 @@
 **Project**: Econofi Compliance Agents — MDI/CDFI Bank Compliance Automation
 **Repository**: `econofi-agents-core` (API + agents), `econofi-agents-ui` (demo UI)
 **Methodology**: Spec-Driven Development + 3-Day Implementation Sprint
-**Overall Status**: Day 1–3 Sprint Complete — CEO Demo Complete — Post-Demo Sprint: Items 1–3 Complete — Frontend Sprint: Items 1–3 Complete
+**Overall Status**: Day 1–3 Sprint Complete — CEO Demo Complete — Post-Demo Sprint: Items 1–3 Complete — Frontend Sprint: Items 1–3 Complete — Full Stack Deployed
 **First Deliverable**: BSA/AML TransactionMonitor — regulation-stable, $59B industry spend, every bank, no framework uncertainty
 
-*Last updated: May 14, 2026 — Frontend Sprint Items 1–3 complete (42/42 tests GREEN); UI polish complete (font sizes, screen real estate); deployment is active NOW work*
+*Last updated: May 15, 2026 — Full stack deployed and verified end-to-end: 15 demo alerts loading at econofi-bsa-dashboard.netlify.app, audit trail endpoint live, migration 005 applied to cloud DB*
 
 ---
 
@@ -300,9 +300,9 @@ docker exec supabase_db_econofi-agents-core psql -U postgres -d postgres -f /tmp
 
 ---
 
-## NOW — Deployment
+## COMPLETED — Deployment
 
-*Status: May 14, 2026 — Frontend deployed; backend and database deployment in progress.*
+*Closed May 15, 2026 — full stack deployed and verified end-to-end.*
 
 ### Alert Dashboard — Full Stack Deployment (~half day)
 
@@ -316,40 +316,68 @@ The Alert Dashboard (`econofi-agents-ui` + `econofi-agents-core`) requires three
 - [x] Set env vars: `API_URL` (placeholder), `DEMO_JWT_SECRET`
 - [x] Deploy — site live at `econofi-bsa-dashboard.netlify.app`
 - [x] Home and Transaction Screener pages confirmed loading
-- [ ] Update `API_URL` to deployed backend URL once backend is live
-- [ ] Confirm Alert Dashboard loads alerts end-to-end
+- [x] Update `API_URL` to deployed backend URL — `https://econofi-agents-core-production.up.railway.app`
+- [x] Confirm Alert Dashboard loads alerts end-to-end — 15 alerts loading
 - [ ] Set custom domain `app.econofi.app` (or similar) when ready
 
-#### 2. Backend — `econofi-agents-core` → Railway or Render
+#### 2. Backend — `econofi-agents-core` → Railway ✓
 
-- [ ] Push `econofi-agents-core` to a GitHub repo ← **in progress**
-- [ ] Create a new Railway or Render service (Node.js, free tier sufficient for demo)
-- [ ] Set all environment variables from `.env` (exclude `DATABASE_URL` local — use cloud Supabase URL)
-- [ ] Set `PORT=3001`, `NODE_ENV=production`
-- [ ] Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to cloud project values (see step 3)
-- [ ] Deploy — confirm `GET /v1/alerts` returns 200 with valid JWT
+- [x] Push `econofi-agents-core` to a GitHub repo — `github.com/Bill-A/econofi-agents-core`
+- [x] Create a new Railway service (Node.js)
+- [x] Set all environment variables from `.env`
+- [x] Set `PORT=3001`, `NODE_ENV=production`
+- [x] Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to cloud project values
+- [x] Deploy — `GET /v1/alerts` returns 200 with valid JWT
+- [x] Fix: added `ws` package as realtime transport (Node.js 20 lacks native WebSocket)
 
-#### 3. Database — Switch local Supabase → cloud Supabase project
+#### 3. Database — Cloud Supabase project ✓
 
-- [ ] Log in to supabase.com — the cloud project already exists (`ljhqickbsxxwmpsrvnpl`)
-- [ ] Run migrations `001` through `005` against the cloud project in order (Supabase Studio SQL editor — use `docker cp` + `psql` pattern for multi-statement files, same as local)
-- [ ] Grant schema permissions: `GRANT USAGE ON SCHEMA bsa_aml TO service_role; GRANT ALL ON ALL TABLES IN SCHEMA bsa_aml TO service_role;`
-- [ ] Create `public.set_app_context(bank_id_value text)` wrapper function in cloud Studio (same SQL used locally)
-- [ ] Re-run `npx ts-node scripts/seed-demo.ts` with `SUPABASE_URL` pointing to cloud project — seeds 4 demo alerts
-- [ ] Confirm RLS is enabled on `bsa_aml.alerts` and `bsa_aml.alert_events` in the cloud project
-- [ ] **Enable RLS on `public.bank_customer_mapping`** — this table scopes all alert queries to a specific bank; without RLS any authenticated user can read every bank's data. Run in cloud Studio SQL editor:
-  ```sql
-  ALTER TABLE public.bank_customer_mapping ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY bank_mapping_isolation ON public.bank_customer_mapping
-    USING (bank_id = current_setting('app.current_bank_id')::UUID);
-  ```
-  Do NOT apply locally before this migration — it will break the seed script and API unless `SET app.current_bank_id` context is confirmed in place for every query path.
+- [x] Create new Supabase project (US East region)
+- [x] Run migrations `001` through `005` against the cloud project
+- [x] Grant schema permissions: `GRANT ALL ON ALL TABLES IN SCHEMA bsa_aml TO service_role, postgres`
+- [x] Create `public.set_app_context(bank_id_value text)` wrapper function
+- [x] Seed 15 demo alerts via `scripts/seed-cloud.sql` (run in Supabase Studio)
+- [x] RLS enabled on `bsa_aml.alerts` and `bsa_aml.alert_events`
+- [x] RLS enabled on `public.bank_customer_mapping`
+- [x] `bsa_aml` and `cra` schemas added to Supabase Data API exposed schemas
 
-#### 4. Wire and verify
+#### 4. Wire and verify ✓
 
-- [ ] Update `API_URL` in Netlify to point to the deployed Railway/Render backend URL
-- [ ] Confirm `GET <backend>/v1/alerts` returns seeded alerts through the deployed UI
-- [ ] Confirm SAR narrative panel appears when status is set to SAR Filed
+- [x] Update `API_URL` in Netlify to Railway backend URL
+- [x] Confirm alert dashboard loads 15 alerts end-to-end
+- [x] Confirm audit trail endpoint returns 200 (`GET /v1/alerts/:id/events`)
+- [x] Confirm SAR narrative panel appears when status is set to SAR Filed
+
+---
+
+## NOW — BSA/AML Demo Enhancements
+
+*Status: May 15, 2026 — Full stack deployed. Deepening demo before pilot outreach.*
+
+### 1. Audit Trail Events — Seed Historical Investigation Records
+
+The audit trail is the strongest exam-readiness differentiator but currently shows "No events recorded yet" on every alert. Pre-seeding realistic event sequences on resolved and in-progress alerts makes the feature tangible.
+
+- [ ] Run `scripts/seed-audit-events.sql` in Supabase Studio SQL Editor — seeds events for 8 alerts (5 resolved, 3 in-progress)
+- [ ] Verify `GET /v1/alerts/ALT-2026-04-20-00001/events` returns 2 events (pending → in_progress → sar_filed)
+- [ ] Verify `GET /v1/alerts/ALT-2026-04-15-00001/events` returns 2 events (tanda closure)
+
+### 2. SAR Narrative Quality Review
+
+- [ ] Read `lib/narratives.ts` against the FinCEN SAR form sections — confirm language and structure hold up under BSA Officer review
+- [ ] Identify any sections that are generic or missing required FinCEN fields
+- [ ] Update narrative template if gaps found
+
+### 3. Demo Path — Home Page
+
+- [ ] Update Demo Guide on `/` (About page) to reference `ALT-2026-05-11-00001` by ID — BSA Officer following along should not have to hunt for the right alert
+- [ ] Confirm 5-minute walkthrough path works end-to-end on deployed stack
+
+### 4. Product Guide — TransactionMonitor
+
+- [ ] Review `docs/marketing/TRANSACTION_MONITOR_GUIDE.md` (written May 15)
+- [ ] Capture screenshots at `econofi-bsa-dashboard.netlify.app` for each slug
+- [ ] Send to pilot prospect contact as leave-behind before LOI conversation
 
 ---
 
