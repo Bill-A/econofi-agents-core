@@ -54,3 +54,9 @@ supabase/.temp/
 
 # Test fixtures with real bank data (synthetic fixtures ARE committed)
 tests/fixtures/real/
+
+# Claude Code local tooling
+.claude/
+
+# Generated / business documents — keep local only
+*.pdf

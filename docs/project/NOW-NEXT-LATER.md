@@ -3,10 +3,10 @@
 **Project**: Econofi Compliance Agents — MDI/CDFI Bank Compliance Automation
 **Repository**: `econofi-agents-core` (API + agents), `econofi-agents-ui` (demo UI)
 **Methodology**: Spec-Driven Development + 3-Day Implementation Sprint
-**Overall Status**: Day 1–3 Sprint Complete — CEO Demo Complete — Post-Demo Sprint: Items 1–3 In Queue
+**Overall Status**: Day 1–3 Sprint Complete — CEO Demo Complete — Post-Demo Sprint: Items 1–3 Complete — Frontend Sprint: Items 1–3 Complete
 **First Deliverable**: BSA/AML TransactionMonitor — regulation-stable, $59B industry spend, every bank, no framework uncertainty
 
-*Last updated: May 12, 2026 — CEO demo complete; outcome = deepen product for pilot with real BSA Officer as Product Owner; Items 1–3 tests written (RED), implementation next*
+*Last updated: May 14, 2026 — Frontend Sprint Items 1–3 complete (42/42 tests GREEN); UI polish complete (font sizes, screen real estate); deployment is active NOW work*
 
 ---
 
@@ -38,6 +38,61 @@ The MDI executive sales pitch — mission alignment, CRA Community Development T
 | Fair Lending LoanDataAnalyzer | Complete | Not started | Week 5-6 |
 | HTTP API Layer | Complete | **COMPLETE** — POST /v1/transactions/screen, GET /v1/alerts, GET /v1/alerts/:id, PATCH /v1/alerts/:id | Day 2 (BSA/AML endpoints) |
 | RegulatoryWatcher | In Progress | Not started | Weeks 3-4 |
+
+---
+
+## Production Data Ingestion Architecture
+
+*Confirmed May 13, 2026. This is the production pipeline. The REST batch endpoint is an internal interface, not the bank-facing intake path.*
+
+Banks do not call REST APIs. Core banking systems (Fiserv, Jack Henry, FIS) export transaction data as batch files and deliver them via SFTP. The correct architecture is:
+
+```
+Bank Core System (Fiserv / Jack Henry / FIS)
+      ↓  SFTP
+AWS Transfer Family  — managed SFTP service, delivers directly into S3; no self-managed SFTP server
+      ↓
+S3 Bucket (FedRAMP Moderate — standard AWS regions; FedRAMP High — AWS GovCloud)
+  [raw bank files: CSV / fixed-width / JSON, PII intact]
+      ↓  S3 event notification → Lambda trigger
+PII Sanitizer / Tokenizer  (new service — Lambda or ECS)
+  · Parse bank file format (format varies by core system)
+  · Customer names     →  [PERSON_001], [PERSON_002], ...
+  · SSNs               →  [SSN_REDACTED]
+  · Account numbers    →  SHA-256 hash
+  · Token map          →  stored in KMS-encrypted vault (never in main DB)
+      ↓
+POST /v1/transactions/batch  (sanitized — no PII reaches this layer or Claude)
+      ↓
+TransactionMonitor → Claude API  (sees only tokens and hashes)
+      ↓
+bsa_aml.alerts → Alert Dashboard
+```
+
+### De-tokenization vault — required for SAR filing
+
+FinCEN SAR forms require real customer name, SSN, and account number. The token-to-PII mapping must be stored in a separate, KMS-encrypted vault (AWS Secrets Manager or dedicated vault service). De-tokenization is a controlled, explicitly acknowledged action:
+
+- BSA Officer clicks "Prepare SAR Filing" (acknowledged action, not automatic)
+- System calls vault → populates SAR form fields with real PII
+- Vault access is written to an immutable audit log (who, when, which alert)
+- De-tokenized data never persists outside the SAR draft — it is passed to the form only
+
+This vault is distinct from the main Supabase database. The main DB stores only tokens and hashes. This is a hard architectural constraint.
+
+### Implications for the REST batch endpoint
+
+`POST /v1/transactions/batch` is the **internal interface** between the PII Sanitizer and TransactionMonitor — not a bank-facing API. Banks never call it directly. The endpoint remains correct as-is; the SFTP → S3 → Sanitizer pipeline calls it after sanitization.
+
+### Items not yet in roadmap (pre-pilot requirement)
+
+- [ ] AWS Transfer Family SFTP endpoint — one per pilot bank, scoped to their S3 prefix
+- [ ] S3 bucket with FedRAMP-appropriate region, KMS encryption at rest, VPC endpoint (no public internet)
+- [ ] PII Sanitizer service — Lambda (files < 50MB) or ECS Fargate (larger batches); handles CSV, fixed-width, JSON
+- [ ] Token vault — KMS + Secrets Manager; token-to-PII mapping; TTL aligned with BSA 5-year retention requirement
+- [ ] De-tokenization workflow — explicit BSA Officer acknowledgment → vault call → SAR form population → audit log
+- [ ] S3 event → Lambda trigger wiring → `POST /v1/transactions/batch` call
+- [ ] File format adapters for at least Fiserv and Jack Henry export formats (pilot bank will dictate which)
 
 ---
 
@@ -190,83 +245,84 @@ docker exec supabase_db_econofi-agents-core psql -U postgres -d postgres -f /tmp
 
 ---
 
-## NOW — Frontend Sprint: Items 1–3 UI
+## COMPLETED — Frontend Sprint: Items 1–3
 
-*Status: May 12, 2026 — backend complete; UI for the three new capabilities is next (econofi-agents-ui).*
+*Closed May 14, 2026 — all three UI items GREEN, 42/42 tests passing.*
 
-**TDD applies here too.** Every component starts with a failing test. No implementation before RED is confirmed.
+**TDD applied throughout.** Every component started with a failing test. RED confirmed before any implementation.
 
-All three additions are in `econofi-agents-ui`. No backend changes required — APIs are fully wired.
+### UI Item 1: "Close Without Filing" Panel ✓
 
----
+**COMPLETE** — May 13, 2026. 9/9 tests GREEN.
 
-### UI Item 1: "Close Without Filing" Panel
+- [x] `ClosureReasonPanel` component (`components/ClosureReasonPanel.tsx`) — amber-styled panel, 8 closure reason codes, optional detail textarea
+- [x] Wired into `InvestigationForm` for `no_sar_warranted` and `false_positive` statuses
+- [x] `CLOSURE_REASON_CODES`, `ClosureReasonCode`, `CLOSURE_REASON_LABELS` added to `lib/types.ts`
+- [x] `closure_reason_code` and `closure_reason_detail` added to `BsaAmlAlert` type
+- [x] `updateAlertStatus` in `lib/api.ts` extended to accept closure fields
+- [x] `actions.ts` forwards closure fields from form submission
 
-**Where**: `app/alerts/[alert_id]/` — parallel to the existing SAR narrative panel.
+### UI Polish ✓
 
-**Behaviour**: Appears when BSA Officer selects `no_sar_warranted` or `false_positive` in the status dropdown. Shows:
-- Closure reason dropdown (8 codes from the enum)
-- Optional detail text field
-- Submit calls `PATCH /v1/alerts/:id` with `closure_reason_code`
+- [x] Demo banner added to nav — amber strip, all pages (`components/Nav.tsx`)
+- [x] Home page moved from `/about` to `/` — full home page with hero, how-to steps, demo guide, scenario cards; `/about` redirects to `/`
+- [x] Nav active-link logic fixed for `/` (exact match only)
+- [x] `econofi-demo` demo banner added — `SetupStep` and `AppHeader`, matching amber style
+- [x] `econofi-demo` `SetupStep` label corrected: `/ TransactionMonitor` → `/ bsa-aml-transactions-feed`
+- [x] `econofi-demo` README rewritten and `CLAUDE.md` created
+- [x] Open Sans applied globally as body font (was only on nav); Inter removed from body
+- [x] Font sizes increased throughout `/alerts`, `/screen`, `/` — all table text, form labels, inputs, badges bumped to `text-base`/`text-lg`; `max-w-7xl` removed from alerts (full-width table); `max-w-2xl` on /screen widened to `max-w-3xl`
 
-- [ ] Write failing component test first
-- [ ] Build `ClosureReasonPanel` component
-- [ ] Wire into alert detail page alongside SAR narrative panel
-- [ ] Update TypeScript types to include `closure_reason_code` on the alert response
+### UI Item 2: Batch Screener (Developer / Demo Tool) ✓
 
-**Validation Gate**: Selecting `no_sar_warranted` without a closure reason is blocked in the UI. Submitting with a valid reason → alert status updates → panel disappears.
+**COMPLETE** — May 13, 2026. 13/13 tests GREEN.
 
----
+- [x] Tab toggle on `/screen` — "Screen One" / "Batch Screen" (`app/screen/page.tsx` rewritten as client component)
+- [x] `BatchScreenForm` component (`app/screen/BatchScreenForm.tsx`) — JSON textarea pre-populated with 3-transaction structuring example, live count indicator, "Screen Batch" / "Analyzing N transactions..." button
+- [x] `BatchResultsView` — submitted/alerts counts, per-alert links to `/alerts/:alert_id`, "Screen Another Batch" reset
+- [x] `PII_DETECTED` 422 error state with clear message
+- [x] `batchScreenAction` Server Action in `app/screen/actions.ts`
+- [x] `batchScreenTransactions()` added to `lib/api.ts`
+- [x] Developer/demo tool note shown when batch tab is active
 
-### UI Item 2: Batch Upload Page
+### UI Item 3: Audit Trail Timeline ✓
 
-**Where**: New page at `app/screen/batch/` (or `/screen` tab toggle).
+**COMPLETE** — May 14, 2026. 10/10 tests GREEN.
 
-**Behaviour**: Accepts JSON paste or CSV upload of transactions (max 500). Submits to `POST /v1/transactions/batch`. Shows results: X submitted, Y alerts created, links to new alerts in dashboard.
+- [x] `AlertEvent` interface added to `lib/types.ts`
+- [x] `getAlertEvents(alertId)` added to `lib/api.ts` — calls `GET /v1/alerts/:id/events`, correctly extracts `envelope.data.events`
+- [x] `AuditTrail` component (`components/AuditTrail.tsx`) — vertical timeline, from→to status transition, formatted date, closure reason human-readable label, notes; empty state "No events recorded yet."
+- [x] Wired into alert detail page — `getAlert` and `getAlertEvents` fetched in parallel with `Promise.all`
+- [x] `router.refresh()` added to `InvestigationForm` after successful update — audit trail updates automatically without page reload
+- [x] `useRouter` mock added to `InvestigationForm.test.tsx`
 
-- [ ] Write failing page test first
-- [ ] Build batch input form (JSON textarea + submit)
-- [ ] Display results summary with alert links
-- [ ] Handle PII_DETECTED 422 with clear error message
-
-**Validation Gate**: Submitting 3 structuring transactions → results show 1 alert created → link navigates to the new alert in the dashboard.
-
----
-
-### UI Item 3: Audit Trail Timeline
-
-**Where**: `app/alerts/[alert_id]/` — below the investigation form.
-
-**Behaviour**: Fetches `GET /v1/alerts/:id/events` on page load. Renders events chronologically: status label, timestamp, closure reason code (if present), notes excerpt.
-
-- [ ] Write failing component test first
-- [ ] Build `AuditTrail` component
-- [ ] Wire into alert detail page
-- [ ] Empty state: "No events recorded yet"
-
-**Validation Gate**: Alert with two status changes shows two timeline entries in chronological order. Closure reason displays human-readable label (e.g. "Tanda / rotating savings"), not raw code.
+**Note for demo**: backend server (`econofi-agents-core`) must be restarted after pulling latest code — the `GET /v1/alerts/:id/events` route was added in the post-demo sprint and requires a fresh `PORT=3001 npm run dev`.
 
 ---
 
-## NEXT — Alert Dashboard Deployment + CRA DataGuard
+## NOW — Deployment
+
+*Status: May 14, 2026 — Frontend deployed; backend and database deployment in progress.*
 
 ### Alert Dashboard — Full Stack Deployment (~half day)
 
 TransactionMonitor (`econofi-demo`) is deployed at `econofi-demo.netlify.app` — pure client-side, no backend.
 The Alert Dashboard (`econofi-agents-ui` + `econofi-agents-core`) requires three services deployed and wired together.
 
-#### 1. Frontend — `econofi-agents-ui` → Vercel or Netlify
+#### 1. Frontend — `econofi-agents-ui` → Netlify ✓
 
-- [ ] Push `econofi-agents-ui` to a GitHub repo
-- [ ] Connect repo to Vercel (preferred for Next.js) or Netlify
-- [ ] Set build command: `npm run build`, output: `.next`
-- [ ] Set environment variable: `API_URL=<deployed backend URL>`
-- [ ] Deploy — confirm Alert Dashboard loads at production URL
+- [x] Push `econofi-agents-ui` to GitHub — `github.com/Bill-A/econofi-agents-ui`
+- [x] Connect repo to Netlify — project name: `econofi-bsa-dashboard`
+- [x] Set env vars: `API_URL` (placeholder), `DEMO_JWT_SECRET`
+- [x] Deploy — site live at `econofi-bsa-dashboard.netlify.app`
+- [x] Home and Transaction Screener pages confirmed loading
+- [ ] Update `API_URL` to deployed backend URL once backend is live
+- [ ] Confirm Alert Dashboard loads alerts end-to-end
 - [ ] Set custom domain `app.econofi.app` (or similar) when ready
 
 #### 2. Backend — `econofi-agents-core` → Railway or Render
 
-- [ ] Push `econofi-agents-core` to a GitHub repo
+- [ ] Push `econofi-agents-core` to a GitHub repo ← **in progress**
 - [ ] Create a new Railway or Render service (Node.js, free tier sufficient for demo)
 - [ ] Set all environment variables from `.env` (exclude `DATABASE_URL` local — use cloud Supabase URL)
 - [ ] Set `PORT=3001`, `NODE_ENV=production`
@@ -291,11 +347,13 @@ The Alert Dashboard (`econofi-agents-ui` + `econofi-agents-core`) requires three
 
 #### 4. Wire and verify
 
-- [ ] Update `API_URL` in Vercel/Netlify to point to the deployed Railway/Render backend URL
+- [ ] Update `API_URL` in Netlify to point to the deployed Railway/Render backend URL
 - [ ] Confirm `GET <backend>/v1/alerts` returns seeded alerts through the deployed UI
 - [ ] Confirm SAR narrative panel appears when status is set to SAR Filed
 
 ---
+
+## NEXT — CRA DataGuard + Full API Build
 
 ### Day 2 Afternoon — CRA DataGuard (deferred from sprint)
 
@@ -444,3 +502,8 @@ Structuring alert amounts corrected to match TransactionMonitor: $9,200 / $9,400
 | May 2026 | Closure reason codes are structured enum, not free text | FinCEN examiners review SAR declination decisions; structured codes make audit trails machine-readable and exam-defensible |
 | May 2026 | Batch intake capped at 500 transactions per call | Keeps synchronous SLA manageable; async batch endpoint (POST /v1/transactions/batch with job_id polling) planned for Weeks 3–4 for 50K+ loads |
 | May 2026 | Tests written RED before implementation begins (enforced) | All three post-demo test files exist and fail before any implementation file is touched; this is the non-negotiable TDD gate for every coding task in this repo |
+| May 2026 | Production intake path is SFTP → S3 (FedRAMP) → PII Sanitizer → API, not direct REST | Banks use core banking export files delivered via SFTP; they do not call REST APIs. AWS Transfer Family lands files in S3. Lambda/ECS PII Sanitizer tokenizes before data reaches Claude or the main DB. |
+| May 2026 | De-tokenization vault is a separate service, not in main DB | FinCEN SARs require real PII. Token-to-PII mapping is stored in KMS-encrypted vault (Secrets Manager). De-tokenization is an explicit, audited BSA Officer action — never automatic. |
+| May 2026 | Batch upload UI is a developer/demo tool, not the production intake path | In production, bulk transaction intake happens through the SFTP pipeline. The UI batch page serves demos, integration testing, and manual spot-checks only. It is labeled and scoped accordingly. |
+| May 2026 | `router.refresh()` added to InvestigationForm after status update | AuditTrail is a server component; `revalidatePath` alone marks cache stale but does not re-render in the current view. `router.refresh()` triggers a live re-fetch so the audit trail updates without a manual page reload. |
+| May 2026 | GET /v1/alerts/:id/events response wraps array as `{ alert_id, events }` — UI must extract `.events` | Frontend `getAlertEvents` must read `envelope.data.events`, not `envelope.data` directly. Discovered when audit trail showed empty despite events in DB. |
