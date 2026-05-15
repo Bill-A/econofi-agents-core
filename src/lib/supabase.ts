@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import WebSocket from 'ws';
 import { Database } from '../types/database';
 
 function requireEnv(key: string): string {
@@ -25,6 +26,10 @@ export function createServiceClient(): SupabaseClient<Database> {
       },
       db: {
         schema: 'public',
+      },
+      realtime: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        transport: WebSocket as any,
       },
     },
   );
