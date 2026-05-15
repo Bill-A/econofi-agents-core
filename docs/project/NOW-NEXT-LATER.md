@@ -370,8 +370,8 @@ The audit trail is the strongest exam-readiness differentiator but currently sho
 
 ### 3. Demo Path — Home Page
 
-- [ ] Update Demo Guide on `/` (About page) to reference `ALT-2026-05-11-00001` by ID — BSA Officer following along should not have to hunt for the right alert
-- [ ] Confirm 5-minute walkthrough path works end-to-end on deployed stack
+- [x] Update Demo Guide on `/` (About page) to reference `ALT-2026-05-11-00001` by ID
+- [x] Confirm 5-minute walkthrough path works end-to-end on deployed stack
 
 ### 4. Product Guide — TransactionMonitor
 
