@@ -364,9 +364,9 @@ The audit trail is the strongest exam-readiness differentiator but currently sho
 
 ### 2. SAR Narrative Quality Review
 
-- [ ] Read `lib/narratives.ts` against the FinCEN SAR form sections — confirm language and structure hold up under BSA Officer review
-- [ ] Identify any sections that are generic or missing required FinCEN fields
-- [ ] Update narrative template if gaps found
+- [x] Read `lib/narratives.ts` against the FinCEN SAR form sections — verified against Form 111 and statutory text
+- [x] Identify any sections that are generic or missing required FinCEN fields — six gaps found and corrected
+- [x] Update narrative template — transaction chronology, date range, total amount, account number placeholder, prior SAR Form 111 fields, no tipping off (§5318(g)(2)), 30/60-day deadline, investigation notes pre-population; §5318(g) corrected to §5318(g)(1) in seed data and live DB
 
 ### 3. Demo Path — Home Page
 
