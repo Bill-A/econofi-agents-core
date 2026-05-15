@@ -1,7 +1,7 @@
 # Econofi TransactionMonitor
 ## Product Guide for BSA Officers
 
-**Version 1.0 — May 2026**
+**Version 1.1 — May 2026**
 **For**: BSA Officers at MDIs, CDFIs, community banks, and credit unions
 
 ---
@@ -29,11 +29,11 @@ You review. You decide. You document. TransactionMonitor makes each of those ste
 | Pattern | What It Detects | Regulation |
 |---|---|---|
 | Structuring | Multiple sub-$10,000 cash deposits designed to avoid CTR filing | 31 USC §5324 |
-| Velocity Anomaly | Dormant account activation, rapid in/out movements | 31 USC §5318(g) |
-| Geographic Risk | Transfers to/from FATF grey-list or black-list jurisdictions | 31 USC §5318(g) |
-| Round Dollar | Unusual round-dollar patterns inconsistent with customer profile | 31 USC §5318(g) |
-| Multiple Indicators | Two or more patterns present simultaneously — highest risk tier | 31 USC §5324, §5318(g) |
-| Customer Deviation | Transaction volume or type significantly outside customer baseline | 31 USC §5318(g) |
+| Velocity Anomaly | Dormant account activation, rapid in/out movements | 31 USC §5318(g)(1) |
+| Geographic Risk | Transfers to/from FATF grey-list or black-list jurisdictions | 31 USC §5318(g)(1) |
+| Round Dollar | Unusual round-dollar patterns inconsistent with customer profile | 31 USC §5318(g)(1) |
+| Multiple Indicators | Two or more patterns present simultaneously — highest risk tier | 31 USC §5324, §5318(g)(1) |
+| Customer Deviation | Transaction volume or type significantly outside customer baseline | 31 USC §5318(g)(1) |
 
 Every alert includes:
 - Risk score (0–100)
@@ -62,14 +62,22 @@ When you close an alert with one of these codes, the decision is recorded in an 
 
 ## The Dashboard
 
-`[SCREENSHOT: Alert dashboard — full list view with severity badges, risk score bars, status filters]`
+`[SCREENSHOT: Alert dashboard — KPI cards at top, full list view with severity badges, risk score bars, age column, status filters]`
 
-The Alert Dashboard shows every open and resolved alert for your institution, sorted by most recent. Each row shows:
+The Alert Dashboard is your BSA compliance queue. Four KPI cards at the top give you the operational picture before you read a single row:
 
-- Alert ID and date
+- **Pending Critical** — alerts at highest severity awaiting first review
+- **Open Past Deadline** — open investigations past the 25-day internal threshold (your 5-day buffer before the 30-day regulatory deadline)
+- **SARs Filed This Month** — running count for examiner reporting
+- **Avg Days to Close** — your institution's average investigation cycle time
+
+Each alert row shows:
+
+- Alert ID and date opened
 - Customer token (no PII displayed)
 - Alert type and severity badge
 - Risk score bar
+- Age in days
 - Current investigation status
 - Link to full detail
 
@@ -77,39 +85,66 @@ The Alert Dashboard shows every open and resolved alert for your institution, so
 
 **Severity filters** let you clear low-risk items quickly and spend time on Critical and High alerts.
 
+**Sort** by risk score, age, or severity — useful for working the highest-risk items first or clearing the oldest open investigations.
+
+**Overdue filter** isolates open investigations past the 25-day threshold so nothing falls through on deadline day.
+
 Try it: [econofi-bsa-dashboard.netlify.app](https://econofi-bsa-dashboard.netlify.app)
 
 ---
 
 ## Investigating an Alert
 
-Click any alert to open the detail view.
+Click any alert to open the detail view. The case file is organized into panels — each one answering a specific question a BSA Officer needs to resolve before making a filing decision.
 
-`[SCREENSHOT: Alert detail — structuring alert ALT-2026-05-11-00001, showing transactions, indicators, regulatory citation, risk score]`
+`[SCREENSHOT: Alert detail — structuring alert ALT-2026-05-11-00001, showing left panel with indicators, right panel with investigation form]`
 
-The detail view shows:
+**Suspicious indicators** — Plain-language description of why each pattern was flagged, with the specific regulatory basis.
 
-**Transaction evidence** — Every flagged transaction with amount, date, type, and whether it was online or branch. Not a summary — the actual records.
+**Flagged Transactions Panel** — Every transaction that triggered the alert: amount, type (cash deposit / wire / ACH), date, and channel (branch or online). Total amount flagged is shown in the panel header.
 
-**Suspicious indicators** — Plain-language description of why each pattern was flagged. Written to be useful to you, not to a developer.
-
-**Regulatory citation** — The specific statute that applies. This goes directly into your documentation.
-
-**Recommended action** — Based on the pattern and risk score: Monitor, Investigate, File SAR, or Escalate Immediately.
+`[SCREENSHOT: Flagged transactions panel — table showing transaction ID, type, amount, date, channel, with total amount header]`
 
 **Confidence score and false positive probability** — Transparency about certainty. A 91% confidence score on a structuring alert means something different than 64%.
 
+**Recommended action** — Based on the pattern and risk score: Monitor, Investigate, File SAR, or Escalate Immediately.
+
+### Customer Identity
+
+`[SCREENSHOT: Customer identity panel — masked state showing [PERSON_001], with "Reveal Identity" button]`
+
+The customer identity panel is masked by default. Customer names, SSNs, dates of birth, and account numbers are never displayed automatically — they require an explicit reveal action by the BSA Officer.
+
+Clicking "Reveal Identity" displays the customer's full legal name, SSN, date of birth, address, account type, and relationship duration — and records that access in the audit trail with your name and timestamp. This gives you the information you need to complete a SAR while maintaining a documented, audited record of every PII access event.
+
+This is not automatic. It is a deliberate, logged action — consistent with the de-tokenization controls required for SAR filing.
+
+### Cross-Alert History
+
+`[SCREENSHOT: Customer alert history panel — list of prior alerts for same customer token, with type, severity, status, age]`
+
+The cross-alert history panel shows every other alert linked to the same customer. You can see at a glance whether this is a first-time flag or a pattern of escalating activity — and click through to any prior alert directly.
+
+This is one of the most exam-defensible features in the platform. An examiner who sees a SAR on a customer with three prior alerts wants to know you were aware of the pattern. The cross-alert history makes that awareness explicit and documented.
+
 ### Updating Status
 
-`[SCREENSHOT: Investigation form — status dropdown, notes field, Save button]`
+`[SCREENSHOT: Investigation form — status dropdown, notes field, SAR reference number field visible after SAR Filed selected]`
 
 The investigation form lets you:
 
-1. Change the status (Pending → In Progress → SAR Filed or No SAR Warranted or False Positive)
+1. Change the status (Pending > In Progress > SAR Filed or No SAR Warranted or False Positive)
 2. Add investigation notes in plain text
-3. For closures that don't result in a SAR: select a structured closure reason code and add detail
+3. For SAR Filed: enter the FinCEN reference number after submission — this closes the loop between the investigation record and the actual filing
+4. For closures that don't result in a SAR: select a structured closure reason code and add detail
+
+**Terminal actions require confirmation.** Changing a status to SAR Filed, No SAR Warranted, or False Positive triggers a confirmation dialog before saving. The dialog reminds you that the decision is permanently recorded. This is intentional — these decisions carry regulatory weight and should not be made by accident.
 
 Every status change writes an immutable event to the audit trail. You cannot edit or delete past events. This is by design — BSA examiners expect to see the full history of a decision, including when it was made and by whom.
+
+### Printing a Case File
+
+The Print button on the alert detail page exports the full case file — alert data, investigation notes, and audit trail — as a formatted document. Use this for your examination binder, for escalation to senior management, or to accompany a SAR filing for your own records.
 
 ---
 
@@ -156,7 +191,7 @@ This is a draft aid. Filing is solely your institution's responsibility. Econofi
 
 ## The Audit Trail
 
-`[SCREENSHOT: Audit trail timeline — showing three events: pending → in_progress (with notes) → sar_filed (with notes), timestamps and actor names]`
+`[SCREENSHOT: Audit trail timeline — showing three events: pending > in_progress (with notes) > sar_filed (with notes), timestamps and actor names]`
 
 Every alert carries a complete, immutable history of every status change:
 
@@ -180,7 +215,7 @@ These boundaries are hard constraints, not features to be added later.
 
 **TransactionMonitor does not make legal determinations.** The risk score and recommended action are analytical outputs, not legal conclusions. Your judgment as a BSA Officer — informed by your knowledge of the customer and the institution — is what matters.
 
-**TransactionMonitor does not access PII.** Customer names, Social Security numbers, and account numbers are never processed by the detection engine. The system works on tokenized data and account hashes. The SAR narrative draft contains placeholder tokens ([PERSON_001]) where real customer information must be inserted by you before filing.
+**The detection engine does not process PII.** Customer names, Social Security numbers, and account numbers are never used by the pattern detection system. It works on tokenized references and account hashes. PII is only accessible through the Customer Identity panel, which requires an explicit BSA Officer action and logs every access to the audit trail. The SAR narrative draft contains placeholder tokens ([PERSON_001]) where real customer information must be inserted by you before filing.
 
 **TransactionMonitor does not replace your BSA program.** It is a tool to support a BSA Officer — not to replace the judgment, training, and institutional knowledge that BSA compliance requires.
 
@@ -196,19 +231,23 @@ The demo is pre-loaded with 15 alerts across all six detection patterns and all 
 
 **Suggested 5-minute walkthrough:**
 
-1. Open the Alert Dashboard. Review the full alert list — note the severity distribution and status mix.
+1. Open the Alert Dashboard. Note the four KPI cards — pending critical count, open past deadline, SARs filed, average days to close. Sort by risk score descending.
 
-2. Find alert `ALT-2026-05-11-00001` — Structuring, Critical, risk score 91. This is a three-branch, three-day sub-threshold deposit pattern on [PERSON_006]. Open it.
+2. Find alert `ALT-2026-05-11-00001` — Structuring, Critical, risk score 91. Three branches, three consecutive days, never hits $10K. Open it.
 
-3. Review the transactions, indicators, and regulatory citation. Note the recommended action: File SAR.
+3. Review the flagged transactions panel — three cash deposits with dates, amounts, and branch channel. Review the suspicious indicators and the regulatory citation.
 
-4. Scroll to the Investigation Form. Change the status to SAR Filed. Add a brief note. Click Save.
+4. Open the Customer Alert History panel. Note any prior alerts on this customer token — repeat patterns are exam-critical.
 
-5. The SAR Narrative Draft panel appears. Toggle between Bank and Credit Union. Click Download Word doc. Review the document — note the placeholder sections in amber.
+5. Click "Reveal Identity" in the Customer Identity panel. Observe that the access is logged.
 
-6. Scroll to the Audit Trail. The status change you just made is recorded with your timestamp.
+6. Scroll to the Investigation Form. Change the status to SAR Filed. Add a brief note. Confirm the dialog. Enter a FinCEN reference number.
 
-7. Return to the dashboard. Find `ALT-2026-04-15-00001` — Structuring, High, closed No SAR Warranted. Open it. Review the closure reason (Tanda cycle) and the investigation notes. Review the audit trail — two events showing the full investigation lifecycle.
+7. The SAR Narrative Draft panel appears. Note the no tipping off warning and filing deadline at the top. Toggle between Bank and Credit Union. Click Download Word doc.
+
+8. Scroll to the Audit Trail. The status change is recorded with your timestamp and notes.
+
+9. Return to the dashboard. Find `ALT-2026-04-15-00001` — closed No SAR Warranted (Tanda cycle). Open it. Review the closure reason code, investigation notes, and two-event audit trail showing the full investigation lifecycle.
 
 The demo resets periodically. All data is synthetic — no real customer information.
 
