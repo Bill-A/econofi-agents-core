@@ -4,7 +4,7 @@
   "description": "Econofi compliance automation agents — BSA/AML, CRA, Fair Lending, LIHTC/NMTC",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "build:watch": "tsc --watch",
     "start": "node dist/index.js",
     "dev": "ts-node -r tsconfig-paths/register src/index.ts",
@@ -61,6 +61,7 @@
     "prettier": "^3.3.0",
     "ts-jest": "^29.2.0",
     "ts-node": "^10.9.0",
+    "tsc-alias": "^1.8.17",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.5.0"
   }
