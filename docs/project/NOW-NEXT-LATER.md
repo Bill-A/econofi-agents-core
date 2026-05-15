@@ -358,9 +358,9 @@ The Alert Dashboard (`econofi-agents-ui` + `econofi-agents-core`) requires three
 
 The audit trail is the strongest exam-readiness differentiator but currently shows "No events recorded yet" on every alert. Pre-seeding realistic event sequences on resolved and in-progress alerts makes the feature tangible.
 
-- [ ] Run `scripts/seed-audit-events.sql` in Supabase Studio SQL Editor — seeds events for 8 alerts (5 resolved, 3 in-progress)
-- [ ] Verify `GET /v1/alerts/ALT-2026-04-20-00001/events` returns 2 events (pending → in_progress → sar_filed)
-- [ ] Verify `GET /v1/alerts/ALT-2026-04-15-00001/events` returns 2 events (tanda closure)
+- [x] Run `scripts/seed-audit-events.sql` in Supabase Studio SQL Editor — 12 events across 8 alerts confirmed
+- [x] Verify `GET /v1/alerts/ALT-2026-04-20-00001/events` returns 2 events (pending > in_progress > sar_filed)
+- [x] Verify `GET /v1/alerts/ALT-2026-04-15-00001/events` returns 2 events (tanda closure)
 
 ### 2. SAR Narrative Quality Review
 
@@ -535,3 +535,4 @@ Structuring alert amounts corrected to match TransactionMonitor: $9,200 / $9,400
 | May 2026 | Batch upload UI is a developer/demo tool, not the production intake path | In production, bulk transaction intake happens through the SFTP pipeline. The UI batch page serves demos, integration testing, and manual spot-checks only. It is labeled and scoped accordingly. |
 | May 2026 | `router.refresh()` added to InvestigationForm after status update | AuditTrail is a server component; `revalidatePath` alone marks cache stale but does not re-render in the current view. `router.refresh()` triggers a live re-fetch so the audit trail updates without a manual page reload. |
 | May 2026 | GET /v1/alerts/:id/events response wraps array as `{ alert_id, events }` — UI must extract `.events` | Frontend `getAlertEvents` must read `envelope.data.events`, not `envelope.data` directly. Discovered when audit trail showed empty despite events in DB. |
+| May 2026 | Pilot deployment is singleton (one Supabase project per bank); multi-tenant after RLS pen test | BSA data is SAR-adjacent — a bank examiner asking "is our data co-resident with other banks?" needs a clean "no." RLS isolation is technically sound but not the same as physical separation. Singleton at pilot scale costs nothing extra (one additional Supabase project). Multi-tenant is the GA architecture but only after JWT tampering + bank_id spoofing + RLS bypass pen test is complete and signed off. Contract language: dedicated database instance per institution during pilot. |

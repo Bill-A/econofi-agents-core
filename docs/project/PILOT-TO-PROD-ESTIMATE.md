@@ -1,7 +1,19 @@
 # Pilot MVP → Full Production — Time Estimate
 
-**As of**: May 14, 2026
-**Current state**: Demo complete (local stack, synthetic data, 42/42 tests GREEN). Deployment is the immediate next step.
+**As of**: May 15, 2026
+**Current state**: Full stack deployed and verified (Railway + Netlify + cloud Supabase). 15 demo alerts live. Pilot bank outreach is the immediate next step.
+
+---
+
+## Deployment Model — Singleton vs Multi-Tenant
+
+**Pilot phase: singleton per bank** — each pilot bank gets its own dedicated Supabase project and its own set of credentials. No bank's data is co-resident with another bank's data.
+
+Rationale: BSA data is SAR-adjacent. A bank examiner asking "is our data in a shared database with other institutions?" needs a clean "no." RLS isolation is technically sound, but physical separation is the answer that travels well with compliance officers and their examiners. At pilot scale (1–3 banks), the cost difference is negligible.
+
+Operational implication: onboarding a new pilot bank means creating a new Supabase project, running the migration sequence, provisioning a `bank_id` UUID and JWT credentials, and pointing a Railway environment variable set at the new project. This is a ~30-minute task, not an IT project.
+
+**GA phase: multi-tenant** — single deployment, banks isolated by RLS and `bank_id` JWT claim. This is the architecture already built. It becomes the production model only after the RLS hardening + penetration test line item below is complete and results are documented.
 
 ---
 
@@ -12,7 +24,7 @@ No SFTP pipeline required. Manual data ingestion script bridges the gap.
 
 | Work | Days | Notes |
 |---|---|---|
-| Full stack deployment (Vercel + Railway + cloud Supabase) | 0.5 | Already spec'd in NNL; cloud Supabase project exists (`ljhqickbsxxwmpsrvnpl`) |
+| Full stack deployment (Vercel + Railway + cloud Supabase) | 0.5 | Already spec'd in NNL; create new Supabase project, run migrations, seed 4 alerts |
 | Real JWT auth + bank onboarding | 1.0 | Replace hardcoded demo JWT; provision bank_id + credentials per pilot bank |
 | Manual sanitizer script (CSV export → tokenized JSON → `POST /v1/transactions/batch`) | 0.5 | One-time script per pilot bank; replaces SFTP pipeline for pilot phase |
 | De-tokenization vault (Secrets Manager, BSA Officer acknowledge flow, audit log) | 1.0 | Required for SAR filing with real customer names/SSNs |
